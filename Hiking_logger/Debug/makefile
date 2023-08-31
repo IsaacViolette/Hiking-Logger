@@ -60,8 +60,8 @@ all: main-build
 main-build: Hiking_logger.elf secondary-outputs
 
 # Tool invocations
-Hiking_logger.elf Hiking_logger.map: $(OBJS) $(USER_OBJS) C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking_logger\STM32L4R5ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Hiking_logger.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking_logger\STM32L4R5ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Hiking_logger.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Hiking_logger.elf Hiking_logger.map: $(OBJS) $(USER_OBJS) C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking-Logger\Hiking_logger\STM32L4R5ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Hiking_logger.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking-Logger\Hiking_logger\STM32L4R5ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Hiking_logger.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
