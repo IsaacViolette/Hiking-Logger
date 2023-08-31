@@ -53,7 +53,7 @@ int main(void)
   while (1)
   {
 	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-	  printf("TEST\r\n");
+	  printf("TEST_2\r\n");
 	  HAL_Delay(500);
 
   }
