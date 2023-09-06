@@ -50,11 +50,14 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t Rx_data[10];
   while (1)
   {
-	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-	  printf("TEST_2\r\n");
-	  HAL_Delay(500);
+	  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+	  //printf("TEST_2\r\n");
+	  //HAL_Delay(500);
+	  HAL_UART_Receive (&huart3, Rx_data, 4, 500);
+	  HAL_Delay(250);
 
   }
 
@@ -134,7 +137,7 @@ static void MX_LPUART1_UART_Init(void)
 
   /* USER CODE END LPUART1_Init 1 */
   hlpuart1.Instance = LPUART1;
-  hlpuart1.Init.BaudRate = 115200;
+  hlpuart1.Init.BaudRate = 6900;
   hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
   hlpuart1.Init.StopBits = UART_STOPBITS_1;
   hlpuart1.Init.Parity = UART_PARITY_NONE;
@@ -182,7 +185,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 6900;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
