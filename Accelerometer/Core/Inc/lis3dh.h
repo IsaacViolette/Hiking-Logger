@@ -9,7 +9,7 @@
 #define INC_LIS3DH_H_
 
 #include <stdbool.h>
-#include "stm32f0xx_hal.h"
+#include "stm32l4xx_hal.h"
 
 typedef struct lis3dh {
 	/* The HAL I2C_HandleTypeDef. */

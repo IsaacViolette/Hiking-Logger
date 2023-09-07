@@ -18,10 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lis3dh.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,14 +43,25 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c3;
 
-/* USER CODE BEGIN PV */
+UART_HandleTypeDef hlpuart1;
 
+/* USER CODE BEGIN PV */
+// Allocate a buffer for reading data from the sensor.
+// Six bytes required to read XYZ data.
+uint8_t xyz_buf[6] = { 0 };
+
+// New instance of the lis3dh convenience object.
+lis3dh_t lis3dh;
+
+// lis3dh calls return this HAL status type.
+HAL_StatusTypeDef status;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C3_Init(void);
+static void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -88,8 +100,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C3_Init();
+  MX_LPUART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  status = lis3dh_init(&lis3dh, &hi2c3, xyz_buf, 6);
 
+    if (status != HAL_OK) {
+      // Unable to communicate with device!
+    }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,12 +114,29 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  if (lis3dh_xyz_available(&lis3dh)) {
+	        status = lis3dh_get_xyz(&lis3dh);
+	        printf(status);
+	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
+	      }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
 
+
+int __io_putchar(int ch)
+{
+        HAL_UART_Transmit(&hlpuart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+        return ch;
+}
+int __io_getchar(void)
+{
+        uint8_t ch = 0;
+        __HAL_UART_CLEAR_OREFLAG(&hlpuart1);
+        HAL_UART_Receive(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
+        return ch;
+}
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -196,6 +230,54 @@ static void MX_I2C3_Init(void)
 }
 
 /**
+  * @brief LPUART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_LPUART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN LPUART1_Init 0 */
+
+  /* USER CODE END LPUART1_Init 0 */
+
+  /* USER CODE BEGIN LPUART1_Init 1 */
+
+  /* USER CODE END LPUART1_Init 1 */
+  hlpuart1.Instance = LPUART1;
+  hlpuart1.Init.BaudRate = 115200;
+  hlpuart1.Init.WordLength = UART_WORDLENGTH_7B;
+  hlpuart1.Init.StopBits = UART_STOPBITS_1;
+  hlpuart1.Init.Parity = UART_PARITY_NONE;
+  hlpuart1.Init.Mode = UART_MODE_TX_RX;
+  hlpuart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  hlpuart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  hlpuart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  hlpuart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  hlpuart1.FifoMode = UART_FIFOMODE_DISABLE;
+  if (HAL_UART_Init(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&hlpuart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&hlpuart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&hlpuart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPUART1_Init 2 */
+
+  /* USER CODE END LPUART1_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -207,6 +289,7 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
