@@ -110,37 +110,36 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    printf("test\r\n");
     while (1)
-      {
-        /* USER CODE END WHILE */
-    	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-    	  printf("test\r\n");
-    	  HAL_Delay(500);
-    	  if (lis3dh_xyz_available(&lis3dh)) {
-    	        status = lis3dh_get_xyz(&lis3dh);
-    	        int xx = lis3dh.x;
-    	        //printf(xx);
-    	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
-    	      }
-        /* USER CODE BEGIN 3 */
-      }
-      /* USER CODE END 3 */
+          {
+            /* USER CODE END WHILE */
+        	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+        	  printf("test\r\n");
+        	  HAL_Delay(500);
+        	  //if (lis3dh_xyz_available(&lis3dh)) {
+        	        //status = lis3dh_get_xyz(&lis3dh);
+        	        //int xx = lis3dh.x;
+        	        //printf(xx);
+        	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
+        	      //}
+            /* USER CODE BEGIN 3 */
+          }
+          /* USER CODE END 3 */
 }
 
 
-int __io_putchar(int ch)
-{
-        HAL_UART_Transmit(&hlpuart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-        return ch;
-}
-int __io_getchar(void)
-{
-        uint8_t ch = 0;
-        __HAL_UART_CLEAR_OREFLAG(&hlpuart1);
-        HAL_UART_Receive(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
-        return ch;
-}
+    int __io_putchar(int ch)
+    {
+            HAL_UART_Transmit(&hlpuart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+            return ch;
+    }
+    int __io_getchar(void)
+    {
+            uint8_t ch = 0;
+            __HAL_UART_CLEAR_OREFLAG(&hlpuart1);
+            HAL_UART_Receive(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
+            return ch;
+    }
 
 /**
   * @brief System Clock Configuration
@@ -295,8 +294,9 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  HAL_PWREx_EnableVddIO2();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
