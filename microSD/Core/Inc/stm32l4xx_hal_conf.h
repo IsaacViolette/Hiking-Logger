@@ -64,7 +64,7 @@
 /*#define HAL_OPAMP_MODULE_ENABLED   */
 /*#define HAL_OSPI_MODULE_ENABLED   */
 /*#define HAL_OSPI_MODULE_ENABLED   */
-/*#define HAL_PCD_MODULE_ENABLED   */
+#define HAL_PCD_MODULE_ENABLED
 /*#define HAL_PKA_MODULE_ENABLED   */
 /*#define HAL_QSPI_MODULE_ENABLED   */
 /*#define HAL_QSPI_MODULE_ENABLED   */
@@ -74,12 +74,12 @@
 /*#define HAL_SD_MODULE_ENABLED   */
 /*#define HAL_SMBUS_MODULE_ENABLED   */
 /*#define HAL_SMARTCARD_MODULE_ENABLED   */
-/*#define HAL_SPI_MODULE_ENABLED   */
+#define HAL_SPI_MODULE_ENABLED
 /*#define HAL_SRAM_MODULE_ENABLED   */
 /*#define HAL_SWPMI_MODULE_ENABLED   */
 /*#define HAL_TIM_MODULE_ENABLED   */
 /*#define HAL_TSC_MODULE_ENABLED   */
-/*#define HAL_UART_MODULE_ENABLED   */
+#define HAL_UART_MODULE_ENABLED
 /*#define HAL_USART_MODULE_ENABLED   */
 /*#define HAL_WWDG_MODULE_ENABLED   */
 /*#define HAL_EXTI_MODULE_ENABLED   */
@@ -182,7 +182,7 @@
   */
 
 #define  VDD_VALUE					  3300U /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            15U    /*!< tick interrupt priority */
+#define  TICK_INT_PRIORITY            0U    /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              0U
 #define  INSTRUCTION_CACHE_ENABLE     1U
