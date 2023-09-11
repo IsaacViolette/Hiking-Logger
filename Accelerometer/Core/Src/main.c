@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include <stdio.h>
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lis3dh.h"
@@ -111,17 +110,22 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-	  if (lis3dh_xyz_available(&lis3dh)) {
-	        status = lis3dh_get_xyz(&lis3dh);
-	        printf(status);
-	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
-	      }
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+    printf("test\r\n");
+    while (1)
+      {
+        /* USER CODE END WHILE */
+    	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+    	  printf("test\r\n");
+    	  HAL_Delay(500);
+    	  if (lis3dh_xyz_available(&lis3dh)) {
+    	        status = lis3dh_get_xyz(&lis3dh);
+    	        int xx = lis3dh.x;
+    	        //printf(xx);
+    	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
+    	      }
+        /* USER CODE BEGIN 3 */
+      }
+      /* USER CODE END 3 */
 }
 
 
@@ -137,6 +141,7 @@ int __io_getchar(void)
         HAL_UART_Receive(&hlpuart1, (uint8_t *)&ch, 1, 0xFFFF);
         return ch;
 }
+
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -284,12 +289,24 @@ static void MX_LPUART1_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : LD3_Pin */
+  GPIO_InitStruct.Pin = LD3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LD3_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

@@ -26,10 +26,8 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-//#include "stm32l4xx_hal_conf.h"
-//#include "stm32l4xx_it.h"
-#include "stm32l4xx.h"
-#include <stdint.h>
+#include "stm32l4xx_hal_conf.h"
+
 /** @addtogroup STM32L4xx_HAL_Driver
   * @{
   */
@@ -634,7 +632,7 @@ extern HAL_TickFreqTypeDef uwTickFreq;
   * @{
   */
 
-/* InitializationHAL_StatusTypeDef HAL_Init(void); and de-initialization functions  ******************************/
+/* Initialization and de-initialization functions  ******************************/
 HAL_StatusTypeDef HAL_Init(void);
 HAL_StatusTypeDef HAL_DeInit(void);
 void              HAL_MspInit(void);
