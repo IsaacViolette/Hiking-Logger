@@ -89,129 +89,79 @@ void myprintf(const char *fmt, ...) {
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_LPUART1_UART_Init();
-  MX_USART3_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
-  MX_SPI1_Init();
-  MX_FATFS_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_LPUART1_UART_Init();
+	MX_USART3_UART_Init();
+	MX_USB_OTG_FS_PCD_Init();
+	MX_SPI1_Init();
+	MX_FATFS_Init();
+	/* USER CODE BEGIN 2 */
 
-    printf("\r\n~ SD card demo by kiwih ~\r\n\r\n");
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	//some variables for FatFs
+	FATFS FatFs; 	//Fatfs handle
+	FIL fil; 		//File handle
+	//FRESULT fres; //Result after operations
 
-    HAL_Delay(1000); //a short delay is important to let the SD card settle
+	//Open the file system
+	UINT bytesWrote;
+	BYTE readBuf[30];
+	//char x = 0;
+	f_mount(&FatFs, "", 1); //1=mount now
+	f_open(&fil, "INC.txt", FA_CREATE_NEW | FA_WRITE | FA_OPEN_ALWAYS | FA_READ);
+	//f_close(&fil);
+	//f_open(&fil, "INC.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_READ);
+	strncpy((char*)readBuf, "WRITING TO FILE!", 19);
+	f_write(&fil, readBuf, 19, &bytesWrote);
+	f_gets((TCHAR*)readBuf, 30, &fil);
+	printf("Read string from 'test.txt' contents: %s\r\n", readBuf);
+	f_close(&fil);
 
-    //some variables for FatFs
-    FATFS FatFs; 	//Fatfs handle
-    FIL fil; 		//File handle
-    FRESULT fres; //Result after operations
+	/*
+	while (x<10)
+	{
+		HAL_Delay(1000); //a short delay is important to let the SD card settle
 
-    //Open the file system
-    fres = f_mount(&FatFs, "", 1); //1=mount now
-    if (fres != FR_OK) {
-  	printf("f_mount error (%i)\r\n", fres);
-  	while(1);
-    }
+		f_open(&fil, "INC.txt", FA_READ | FA_WRITE);
 
-    //Let's get some statistics from the SD card
-    DWORD free_clusters, free_sectors, total_sectors;
+		//WRITE TO FILE
+		strncpy((char*)readBuf, 0, 19);
+		UINT bytesWrote;
+		f_write(&fil, readBuf, 19, &bytesWrote);
 
-    FATFS* getFreeFs;
+		f_close(&fil);
 
-    fres = f_getfree("", &free_clusters, &getFreeFs);
-    if (fres != FR_OK) {
-  	printf("f_getfree error (%i)\r\n", fres);
-  	while(1);
-    }
+		x++;
 
-    //Formula comes from ChaN's documentation
-    total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-    free_sectors = free_clusters * getFreeFs->csize;
 
-    printf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
-
-    //Now let's try to open file "test.txt"
-    fres = f_open(&fil, "test.txt", FA_READ);
-    if (fres != FR_OK) {
-  	printf("f_open error\r\n");
-  	while(1);
-    }
-    printf("I was able to open 'test.txt' for reading!\r\n");
-
-    //Read 30 bytes from "test.txt" on the SD card
-    BYTE readBuf[30];
-
-    //We can either use f_read OR f_gets to get data out of files
-    //f_gets is a wrapper on f_read that does some string formatting for us
-    TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
-    if(rres != 0) {
-  	printf("Read string from 'test.txt' contents: %s\r\n", readBuf);
-    } else {
-  	printf("f_gets error (%i)\r\n", fres);
-    }
-
-    //Be a tidy kiwi - don't forget to close your file!
-    f_close(&fil);
-
-    //Now let's try and write a file "write.txt"
-    fres = f_open(&fil, "SD.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-    if(fres == FR_OK) {
-  	printf("I was able to open 'SD.txt' for writing\r\n");
-    } else {
-  	printf("f_open error (%i)\r\n", fres);
-    }
-
-    //Copy in a string
-    strncpy((char*)readBuf, "MY MAN MY MAN", 25);
-    UINT bytesWrote;
-    fres = f_write(&fil, readBuf, 25, &bytesWrote);
-    if(fres == FR_OK) {
-  	printf("Wrote %i bytes to 'SD.txt'!\r\n", bytesWrote);
-    } else {
-  	printf("f_write error\r\n");
-    }
-
-    //Be a tidy kiwi - don't forget to close your file!
-    f_close(&fil);
-
-    //We're done, so de-mount the drive
-    f_mount(NULL, "", 0);
-
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-    while (1)
-    {
-      /* USER CODE END WHILE */
-
-      /* USER CODE BEGIN 3 */
-        //Blink the LED every second
-  	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-  	  HAL_Delay(1000);
-    }
-    /* USER CODE END 3 */
+	}
+	*/
+	//We're done, so de-mount the drive
+	f_mount(NULL, "", 0);
+	while(1);
+	/* USER CODE END 3 */
 }
 
 int __io_putchar(int ch)
