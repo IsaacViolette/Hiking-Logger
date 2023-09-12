@@ -1,3 +1,4 @@
+/*TEST*/
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -68,19 +69,7 @@ void myprintf(const char *fmt, ...);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/*
-void myprintf(const char *fmt, ...) {
-  static char buffer[256];
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(buffer, sizeof(buffer), fmt, args);
-  va_end(args);
 
-  int len = strlen(buffer);
-  HAL_UART_Transmit(&hlpuart1, (uint8_t*)buffer, len, -1);
-
-}
-*/
 /* USER CODE END 0 */
 
 /**
