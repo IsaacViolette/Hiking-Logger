@@ -18,10 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdio.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lis3dh.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,14 +115,16 @@ int main(void)
           {
             /* USER CODE END WHILE */
         	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-        	  printf("test\r\n");
+        	  //printf("test1\r\n");
         	  HAL_Delay(500);
-        	  //if (lis3dh_xyz_available(&lis3dh)) {
-        	        //status = lis3dh_get_xyz(&lis3dh);
-        	        //int xx = lis3dh.x;
-        	        //printf(xx);
+        	  if (lis3dh_xyz_available(&lis3dh)) {
+        	        status = lis3dh_get_xyz(&lis3dh);
+        	        int xx = lis3dh.x;
+        	        int yy = lis3dh.y;
+        	        int zz = lis3dh.z;
+        	        printf("%d, %d, %d\r\n",xx,yy,zz);
         	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
-        	      //}
+        	      }
             /* USER CODE BEGIN 3 */
           }
           /* USER CODE END 3 */
@@ -250,7 +253,7 @@ static void MX_LPUART1_UART_Init(void)
   /* USER CODE END LPUART1_Init 1 */
   hlpuart1.Instance = LPUART1;
   hlpuart1.Init.BaudRate = 115200;
-  hlpuart1.Init.WordLength = UART_WORDLENGTH_7B;
+  hlpuart1.Init.WordLength = UART_WORDLENGTH_8B;
   hlpuart1.Init.StopBits = UART_STOPBITS_1;
   hlpuart1.Init.Parity = UART_PARITY_NONE;
   hlpuart1.Init.Mode = UART_MODE_TX_RX;
