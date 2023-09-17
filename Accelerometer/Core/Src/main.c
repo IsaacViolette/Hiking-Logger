@@ -23,6 +23,10 @@
 /* USER CODE BEGIN Includes */
 #include "lis3dh.h"
 #include <stdio.h>
+#include "stdint.h"
+#include "count_steps.h"
+#include "stdio.h"  //using this for printing debug outputs
+#include "math.h"   //using this for converting the CSV data from float to int
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define NUM_SAMPLES_IN_CSV_FILE 100//400
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -111,21 +115,62 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+    uint8_t  num_steps  = 0;
     while (1)
           {
             /* USER CODE END WHILE */
-        	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+
         	  //printf("test1\r\n");
-        	  HAL_Delay(500);
-        	  if (lis3dh_xyz_available(&lis3dh)) {
-        	        status = lis3dh_get_xyz(&lis3dh);
-        	        int xx = lis3dh.x;
-        	        int yy = lis3dh.y;
-        	        int zz = lis3dh.z;
-        	        printf("%d, %d, %d\r\n",xx,yy,zz);
-        	        // You now have raw acceleration of gravity in lis3dh->x, y, and z.
+
+    	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
+    	    //[x1,y1,z1,x2,y2,z2...x400,y400,z400]
+    	    int8_t acc[NUM_SAMPLES_IN_CSV_FILE*3] = {0};
+    	    uint16_t i    = 0;
+    	    float    temp = 0;
+    	    while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
+        	{
+    			  HAL_Delay(50); //20Hz
+    			  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+
+    			//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
+    			//and then calculating the max of that data. then divide that by 127 to get the scaling factor
+    			  float scale_factor = 55.3293;
+
+				  if (lis3dh_xyz_available(&lis3dh)) {
+						status = lis3dh_get_xyz(&lis3dh);
+						float xx = lis3dh.x/16384;
+						float yy = lis3dh.y/16384;
+						float zz = lis3dh.z/16384;
+
+						temp     = roundf(xx*scale_factor);
+						acc[i++] = (int8_t)temp;
+
+						temp     = roundf(yy*scale_factor);
+						acc[i++] = (int8_t)temp;
+
+						temp     = roundf(zz*scale_factor);
+						acc[i++] = (int8_t)temp;
+
+						//printf("%f, %f, %f\r\n",xx,yy,zz);
+						// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+
+					  }
+
+        	  }            /* USER CODE BEGIN 3 */
+        	  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
+        	      int8_t   data[NUM_TUPLES*3] = {0};
+        	      uint8_t  num_segments       = NUM_SAMPLES_IN_CSV_FILE/(SAMPLING_RATE*WINDOW_LENGTH);
+        	      uint16_t j                  = 0;
+
+        	      for (i = 0; i < num_segments; i++) {
+        	          for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
+        	              data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
+        	          }
+        	          num_steps += count_steps(data);
         	      }
-            /* USER CODE BEGIN 3 */
+        	      printf("num steps: %i\n\r", num_steps);
+
+
           }
           /* USER CODE END 3 */
 }
