@@ -27,6 +27,9 @@
 #include "count_steps.h"
 #include "stdio.h"  //using this for printing debug outputs
 #include "math.h"   //using this for converting the CSV data from float to int
+
+#include "I2C.h"
+#include "ssd1306.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,7 +99,8 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
-
+  I2C_GPIO_init();
+  I2C_Initialization(I2C1);
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -116,6 +120,15 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
     uint8_t  num_steps  = 0;
+    char message[64] = "ABCDEFGHIJK";
+
+
+      //ssd1306_TestAll();
+      	ssd1306_Init();
+      	ssd1306_Fill(White);
+      	ssd1306_SetCursor(2,0);
+      	ssd1306_WriteString(message, Font_11x18, Black);
+      	ssd1306_UpdateScreen();
     while (1)
           {
             /* USER CODE END WHILE */
@@ -169,7 +182,10 @@ int main(void)
         	          num_steps += count_steps(data);
         	      }
         	      printf("num steps: %i\n\r", num_steps);
-
+        	      ssd1306_Fill(Black);
+        	      ssd1306_SetCursor(2,0);
+        	      ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
+        	      ssd1306_UpdateScreen();
 
           }
           /* USER CODE END 3 */
