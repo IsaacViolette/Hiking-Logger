@@ -20,6 +20,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -69,22 +70,105 @@ static void MX_USART2_UART_Init(void);
   */
 UART_HandleTypeDef huart2;
 uint8_t nmea;
-uint8_t nmea_buf[256]; // Adjust the buffer size as needed
-uint8_t nmea_cpy[256];
+char nmea_buf[256];
+char nmea_gga[256];
 uint8_t i = 0;
+
+double get_lat(char *gga)
+{
+	double latitude = 0.0;
+
+	char gga_cpy[256];
+	strncpy(gga_cpy, gga, 256);
+
+	char *token = strtok(gga_cpy, ",");
+
+	while (token != NULL)
+	{
+		if ((strcmp(token, "N") == 0) || (strcmp(token, "S") == 0))
+		{
+			break;
+		}
+		else
+		{
+			latitude = atof(token);
+		}
+			token = strtok(NULL, ",");
+	}
+
+		return latitude;
+}
+
+double get_lon(char *gga)
+{
+	double longitude = 0.0;
+
+	char gga_cpy[256];
+	strncpy(gga_cpy, gga, 256);
+
+	char *token = strtok(gga_cpy, ",");
+
+	while (token != NULL)
+	{
+		if ((strcmp(token, "W") == 0) || (strcmp(token, "E") == 0))
+		{
+			break;
+		}
+		else
+		{
+			longitude = atof(token);
+		}
+			token = strtok(NULL, ",");
+	}
+
+		return longitude;
+}
+
+double get_alt(char *gga)
+{
+	double altitude = 0.0;
+
+	char gga_cpy[256];
+	strncpy(gga_cpy, gga, 256);
+
+	char *token = strtok(gga_cpy, ",");
+
+	while (token != NULL)
+	{
+		if (strcmp(token, "M") == 0)
+		{
+			break;
+		}
+		else
+		{
+			altitude = atof(token);
+		}
+			token = strtok(NULL, ",");
+	}
+
+		return altitude;
+}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart == &huart2) {
+    	double lat;
+    	double lon;
+    	double alt;
         nmea_buf[i++] = nmea;
 
         if (nmea == '\n' || i >= sizeof(nmea_buf) - 1) {
         	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A')
         	{
-        		memcpy(nmea_cpy, nmea_buf, 256);
-        		printf("%s", nmea_cpy);
+        		memcpy(nmea_gga, nmea_buf, 256);
+        		lat = get_lat(nmea_gga);
+        		lon = get_lon(nmea_gga);
+        		alt = get_alt(nmea_gga);
+        		printf("%f, %f, %f\n\r", lat, lon, alt);
+        		//printf("%s\n\r", nmea_gga);
+
+
         	}
 
-            // Reset the buffer and index for the next data
             memset(nmea_buf, 0, sizeof(nmea_buf));
             i = 0;
         }
@@ -118,15 +202,6 @@ int main(void)
   HAL_UART_Receive_IT(&huart2, &nmea, 1);
   while (1)
   {
-
-	  /*
-	  status = HAL_UART_Receive(&huart2, nmea_sentence, 256, 3000);
-	  if(status == HAL_OK)
-	  {
-	  	  printf("%d\n\r", status);
-	  	  printf("\n\r%s\n\r",nmea_sentence);
-	  }
-	  */
   }
 }
 
