@@ -1,0 +1,6 @@
+../Core/Src/lis3dh.c:14:19:lis3dh_init	32	static
+../Core/Src/lis3dh.c:46:6:lis3dh_xyz_available	24	static
+../Core/Src/lis3dh.c:57:19:lis3dh_read	40	static
+../Core/Src/lis3dh.c:63:19:lis3dh_write	32	static
+../Core/Src/lis3dh.c:67:19:lis3dh_get_xyz	40	static
+../Core/Src/lis3dh.c:93:19:lis3dh_get_temp	16	static
