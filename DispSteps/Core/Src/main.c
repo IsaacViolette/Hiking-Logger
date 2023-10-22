@@ -177,6 +177,7 @@ int main(void)
         	        	        	          }
         	        	        	          num_steps += count_steps(data);
         	        	        	      }
+
         	        	        	      printf("num steps: %i\n\r", num_steps);
         	        	        	      ssd1306_Fill(Black);
         	        	        	      ssd1306_SetCursor(2,0);

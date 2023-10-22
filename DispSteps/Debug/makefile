@@ -60,8 +60,8 @@ all: main-build
 main-build: DispSteps.elf secondary-outputs
 
 # Tool invocations
-DispSteps.elf DispSteps.map: $(OBJS) $(USER_OBJS) /Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/DispSteps/STM32L412RBTXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "DispSteps.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/DispSteps/STM32L412RBTXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="DispSteps.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+DispSteps.elf DispSteps.map: $(OBJS) $(USER_OBJS) /Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/Hiking-Logger/DispSteps/STM32L412RBTXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "DispSteps.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/Hiking-Logger/DispSteps/STM32L412RBTXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="DispSteps.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
