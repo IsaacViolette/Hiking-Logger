@@ -25,8 +25,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "stm32l4xx.h"
+//#include "GPS.h"
 #include "I2C.h"
 #include "ssd1306.h"
+#include "lis3dh.h"
+#include "count_steps.h"
+#include "math.h"   //using this for converting the CSV data from float to int
 
 /* USER CODE END Includes */
 
@@ -37,7 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define NUM_SAMPLES_IN_CSV_FILE 200//400
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,7 +56,14 @@ I2C_HandleTypeDef hi2c3;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+// Allocate a buffer for reading data from the sensor.
+// Six bytes required to read XYZ data.
+uint8_t xyz_buf[6] = { 0 };
+// New instance of the lis3dh convenience object.
+lis3dh_t lis3dh;
 
+// lis3dh calls return this HAL status type.
+HAL_StatusTypeDef status;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,6 +83,10 @@ uint8_t nmea;
 char nmea_buf[256];
 char nmea_gga[256];
 uint8_t i = 0;
+
+double lat;
+double lon;
+double alt;
 
 double get_lat(char *gga)
 {
@@ -150,12 +165,10 @@ double get_alt(char *gga)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart == &huart2) {
-    	double lat;
-    	double lon;
-    	double alt;
+
         nmea_buf[i++] = nmea;
-        char buf1[16];
-        char buf2[16];
+        //char buf1[16];
+        //char buf2[16];
 
         if (nmea == '\n' || i >= sizeof(nmea_buf) - 1) {
         	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A')
@@ -164,17 +177,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         		lat = get_lat(nmea_gga);
         		lon = get_lon(nmea_gga);
         		alt = get_alt(nmea_gga);
-        		//printf("%f, %f, %f\n\r", lat, lon, alt);
-        		//printf("%s\n\r", nmea_gga);
-        		 ssd1306_Fill(Black);
-        		 ssd1306_SetCursor(2,0);
-        		 sprintf(buf1,"%f",lat);
-        		 ssd1306_WriteString(buf1, Font_11x18, White);
-        		 ssd1306_SetCursor(2,15);
-        		 sprintf(buf2,"%f",lon);
-        		 ssd1306_WriteString(buf2, Font_11x18, White);
-        		 ssd1306_UpdateScreen();
-
 
         	}
 
@@ -220,7 +222,9 @@ int main(void)
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  char buf[64] = "Start GPS";
+  char buf[16] = "Start GPS";
+  char buf1[16];
+  char buf2[16];
   //ssd1306_TestAll();
   ssd1306_Init();
   ssd1306_Fill(Black);
@@ -228,16 +232,98 @@ int main(void)
   ssd1306_WriteString(buf, Font_11x18, White);
   ssd1306_UpdateScreen();
   /* USER CODE END 2 */
+  status = lis3dh_init(&lis3dh, &hi2c3, xyz_buf, 6);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  HAL_UART_Receive_IT(&huart2, &nmea, 1);
-  while (1)
-  {
-    /* USER CODE END WHILE */
+          if (status != HAL_OK) {
+          	 //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+            // Unable to communicate with device!
+          }
 
-    /* USER CODE BEGIN 3 */
-  }
+
+          char message[64] = "Starting Up";
+            //ssd1306_TestAll();
+            ssd1306_Init();
+            ssd1306_Fill(Black);
+            ssd1306_SetCursor(2,0);
+            ssd1306_WriteString(message, Font_11x18, White);
+            ssd1306_UpdateScreen();
+    /* USER CODE END 2 */
+
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
+          uint8_t  num_steps  = 0;
+          //char buf[20];
+          HAL_UART_Receive_IT(&huart2, &nmea, 1);
+          while (1)
+                {
+          	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
+          	        	    	    //[x1,y1,z1,x2,y2,z2...x400,y400,z400]
+          	        	    	    int8_t acc[NUM_SAMPLES_IN_CSV_FILE*3] = {0};
+          	        	    	    uint16_t i    = 0;
+          	        	    	    float    temp = 0;
+          	        	    	    while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
+          	        	        	{
+          	        	    			  HAL_Delay(50); //20Hz
+          	        	    			  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+
+          	        	    			//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
+          	        	    			//and then calculating the max of that data. then divide that by 127 to get the scaling factor
+          	        	    			  float scale_factor = 55.3293;
+
+          	        					  if (lis3dh_xyz_available(&lis3dh)) {
+          	        							status = lis3dh_get_xyz(&lis3dh);
+          	        							float xx = lis3dh.x/16384;
+          	        							float yy = lis3dh.y/16384;
+          	        							float zz = lis3dh.z/16384;
+
+          	        							temp     = roundf(xx*scale_factor);
+          	        							acc[i++] = (int8_t)temp;
+
+          	        							temp     = roundf(yy*scale_factor);
+          	        							acc[i++] = (int8_t)temp;
+
+          	        							temp     = roundf(zz*scale_factor);
+          	        							acc[i++] = (int8_t)temp;
+
+          	        							//printf("%f, %f, %f\r\n",xx,yy,zz);
+          	        							// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+
+          	        						  }
+          	        	        	  }
+          	        	        	  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
+          	        	        	      int8_t   data[NUM_TUPLES*3] = {0};
+          	        	        	      uint8_t  num_segments       = NUM_SAMPLES_IN_CSV_FILE/(SAMPLING_RATE*WINDOW_LENGTH);
+          	        	        	      uint16_t j                  = 0;
+
+          	        	        	      for (i = 0; i < num_segments; i++) {
+          	        	        	          for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
+          	        	        	              data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
+          	        	        	          }
+          	        	        	          num_steps += count_steps(data);
+          	        	        	      }
+
+          	        	        	      printf("num steps: %i\n\r", num_steps);
+          	        	        	      ssd1306_Fill(Black);
+          	        	        	      ssd1306_SetCursor(2,0);
+          	        	        	      ssd1306_WriteString("Steps:", Font_11x18, White);
+          	        	        	      ssd1306_SetCursor(2,15);
+          	        	        	      ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
+          	        	        	      ssd1306_SetCursor(2,30);
+          	        	        	      //ssd1306_WriteString("Distance:", Font_11x18, White);
+          	        	        	      sprintf(buf1,"%0.4f",lat);
+          	        	        	      ssd1306_WriteString(buf1, Font_11x18, White);
+          	        	        	      ssd1306_SetCursor(2,45);
+          	        	        	      //ssd1306_WriteString("20 miles", Font_11x18, White);
+          	        	        	      sprintf(buf2,"%0.4f",lon);
+          	        	        	      ssd1306_WriteString(buf2, Font_11x18, White);
+          	        	        	      ssd1306_UpdateScreen();
+
+
+      /* USER CODE END WHILE */
+                }
+      /* USER CODE BEGIN 3 */
+
+
   /* USER CODE END 3 */
 }
 

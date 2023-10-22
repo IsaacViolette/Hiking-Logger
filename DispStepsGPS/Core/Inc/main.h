@@ -46,7 +46,9 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+extern double lon;
+extern double lat;
+extern double alt;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

@@ -1,4 +1,7 @@
+"./Core/Src/GPS.o"
 "./Core/Src/I2C.o"
+"./Core/Src/count_steps.o"
+"./Core/Src/lis3dh.o"
 "./Core/Src/main.o"
 "./Core/Src/ssd1306.o"
 "./Core/Src/ssd1306_fonts.o"
