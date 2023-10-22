@@ -83,3 +83,37 @@
 //
 //		return altitude;
 //}
+
+#include <stdio.h>
+#include <math.h>
+#define RADIUS_OF_EARTH 6371000 // Earth's radius in meters
+
+double ddm2dd(double ddm) {
+    double degrees = floor(ddm / 100.0);
+    double minutes = ddm - degrees * 100.0;
+    double dd = degrees + minutes / 60.0;
+    return dd;
+}
+
+// Function to convert degrees to radians
+double degreesToRadians(double degrees) {
+    return degrees * M_PI / 180.0;
+}
+
+// Function to calculate the distance between two coordinates using Haversine formula
+double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    // Convert latitude and longitude from degrees to radians
+    lat1 = degreesToRadians(ddm2dd(lat1));
+    lon1 = degreesToRadians(ddm2dd(lon1));
+    lat2 = degreesToRadians(ddm2dd(lat2));
+    lon2 = degreesToRadians(ddm2dd(lon2));
+
+    // Haversine formula
+    double dlat = lat2 - lat1;
+    double dlon = lon2 - lon1;
+    double a = sin(dlat/2) * sin(dlat/2) + cos(lat1) * cos(lat2) * sin(dlon/2) * sin(dlon/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    double distance = RADIUS_OF_EARTH * c;
+
+    return distance;
+}

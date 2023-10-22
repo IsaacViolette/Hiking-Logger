@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "stm32l4xx.h"
-//#include "GPS.h"
+#include "GPS.h"
 #include "I2C.h"
 #include "ssd1306.h"
 #include "lis3dh.h"
@@ -41,7 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUM_SAMPLES_IN_CSV_FILE 200//400
+#define NUM_SAMPLES_IN_CSV_FILE 400//400
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -84,9 +84,11 @@ char nmea_buf[256];
 char nmea_gga[256];
 uint8_t i = 0;
 
-double lat;
-double lon;
-double alt;
+double cur_lat = 0;
+double cur_lon = 0;
+double pre_lat = 0;
+double pre_lon = 0;
+double alt = 0;
 
 double get_lat(char *gga)
 {
@@ -174,8 +176,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A')
         	{
         		memcpy(nmea_gga, nmea_buf, 256);
-        		lat = get_lat(nmea_gga);
-        		lon = get_lon(nmea_gga);
+        		cur_lat = get_lat(nmea_gga);
+        		cur_lon = get_lon(nmea_gga);
         		alt = get_alt(nmea_gga);
 
         	}
@@ -222,15 +224,9 @@ int main(void)
   MX_I2C3_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  char buf[16] = "Start GPS";
   char buf1[16];
   char buf2[16];
-  //ssd1306_TestAll();
-  ssd1306_Init();
-  ssd1306_Fill(Black);
-  ssd1306_SetCursor(2,0);
-  ssd1306_WriteString(buf, Font_11x18, White);
-  ssd1306_UpdateScreen();
+
   /* USER CODE END 2 */
   status = lis3dh_init(&lis3dh, &hi2c3, xyz_buf, 6);
 
@@ -252,6 +248,7 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
           uint8_t  num_steps  = 0;
+          double distance = 0;
           //char buf[20];
           HAL_UART_Receive_IT(&huart2, &nmea, 1);
           while (1)
@@ -264,7 +261,7 @@ int main(void)
           	        	    	    while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
           	        	        	{
           	        	    			  HAL_Delay(50); //20Hz
-          	        	    			  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+          	        	    			  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
 
           	        	    			//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
           	        	    			//and then calculating the max of that data. then divide that by 127 to get the scaling factor
@@ -302,22 +299,39 @@ int main(void)
           	        	        	          num_steps += count_steps(data);
           	        	        	      }
 
-          	        	        	      printf("num steps: %i\n\r", num_steps);
+          	        	        	      //printf("num steps: %i\n\r", num_steps);
           	        	        	      ssd1306_Fill(Black);
           	        	        	      ssd1306_SetCursor(2,0);
           	        	        	      ssd1306_WriteString("Steps:", Font_11x18, White);
           	        	        	      ssd1306_SetCursor(2,15);
           	        	        	      ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
-          	        	        	      ssd1306_SetCursor(2,30);
+          	        	        	      //ssd1306_SetCursor(2,30);
           	        	        	      //ssd1306_WriteString("Distance:", Font_11x18, White);
-          	        	        	      sprintf(buf1,"%0.4f",lat);
-          	        	        	      ssd1306_WriteString(buf1, Font_11x18, White);
-          	        	        	      ssd1306_SetCursor(2,45);
-          	        	        	      //ssd1306_WriteString("20 miles", Font_11x18, White);
-          	        	        	      sprintf(buf2,"%0.4f",lon);
-          	        	        	      ssd1306_WriteString(buf2, Font_11x18, White);
+//          	        	        	      sprintf(buf1,"%0.4f",cur_lat);
+//          	        	        	      ssd1306_WriteString(buf1, Font_11x18, White);
+//          	        	        	      ssd1306_SetCursor(2,45);
+//          	        	        	      ssd1306_WriteString("20 miles", Font_11x18, White);
+//          	        	        	      sprintf(buf2,"%0.4f",cur_lon);
+//          	        	        	      ssd1306_WriteString(buf2, Font_11x18, White);
           	        	        	      ssd1306_UpdateScreen();
 
+          	        	        	      if((pre_lat == 0) && (pre_lon == 0))
+          	        	        	      {
+          	        	        	    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+          	        	        	    	pre_lat = cur_lat;
+          	        	        	    	pre_lon = cur_lon;
+          	        	        	      }
+          	        	        	      else
+          	        	        	      {
+          	        	        	    	distance += calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
+											sprintf(buf1,"%0.4f",distance);
+											ssd1306_SetCursor(2,45);
+											ssd1306_WriteString(buf1, Font_11x18, White);
+											ssd1306_UpdateScreen();
+          	        	        	      }
+
+											pre_lat = cur_lat;
+											pre_lon = cur_lon;
 
       /* USER CODE END WHILE */
                 }

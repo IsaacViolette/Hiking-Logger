@@ -9,7 +9,9 @@
 #define INC_GPS_H_
 
 
-
+double ddm2dd(double ddm);
+double degreesToRadians(double degrees);
+double calculateDistance(double lat1, double lon1, double lat2, double lon2);
 
 
 //double get_lat(char *gga);
