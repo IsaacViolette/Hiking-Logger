@@ -1,6 +1,0 @@
-../Core/Src/lis3dh.c:14:19:lis3dh_init	6
-../Core/Src/lis3dh.c:46:6:lis3dh_xyz_available	2
-../Core/Src/lis3dh.c:57:19:lis3dh_read	2
-../Core/Src/lis3dh.c:63:19:lis3dh_write	1
-../Core/Src/lis3dh.c:67:19:lis3dh_get_xyz	3
-../Core/Src/lis3dh.c:93:19:lis3dh_get_temp	1
