@@ -42,6 +42,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define NUM_SAMPLES_IN_CSV_FILE 400//400
+#define MIN_GPS_DISTANCE 5
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -225,7 +226,8 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   char buf1[16];
-  char buf2[16];
+  //char buf2[16];
+
 
   /* USER CODE END 2 */
   status = lis3dh_init(&lis3dh, &hi2c3, xyz_buf, 6);
@@ -248,7 +250,9 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
           uint8_t  num_steps  = 0;
-          double distance = 0;
+          float distance = 0;
+          float total_distance;
+          float new_distance;
           //char buf[20];
           HAL_UART_Receive_IT(&huart2, &nmea, 1);
           while (1)
@@ -305,33 +309,40 @@ int main(void)
           	        	        	      ssd1306_WriteString("Steps:", Font_11x18, White);
           	        	        	      ssd1306_SetCursor(2,15);
           	        	        	      ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
-          	        	        	      //ssd1306_SetCursor(2,30);
-          	        	        	      //ssd1306_WriteString("Distance:", Font_11x18, White);
-//          	        	        	      sprintf(buf1,"%0.4f",cur_lat);
-//          	        	        	      ssd1306_WriteString(buf1, Font_11x18, White);
-//          	        	        	      ssd1306_SetCursor(2,45);
-//          	        	        	      ssd1306_WriteString("20 miles", Font_11x18, White);
-//          	        	        	      sprintf(buf2,"%0.4f",cur_lon);
-//          	        	        	      ssd1306_WriteString(buf2, Font_11x18, White);
+          	        	        	      ssd1306_SetCursor(2,30);
+          	        	        	      ssd1306_WriteString("Distance:", Font_11x18, White);
+//          	        	        	  sprintf(buf1,"%0.4f",cur_lat);
+//          	        	        	  ssd1306_WriteString(buf1, Font_11x18, White);
+//          	        	        	  ssd1306_SetCursor(2,45);
+//          	        	        	  ssd1306_WriteString("20 miles", Font_11x18, White);
+//          	        	        	  sprintf(buf2,"%0.4f",cur_lon);
+//          	        	        	  ssd1306_WriteString(buf2, Font_11x18, White);
           	        	        	      ssd1306_UpdateScreen();
 
           	        	        	      if((pre_lat == 0) && (pre_lon == 0))
           	        	        	      {
-          	        	        	    	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
-          	        	        	    	pre_lat = cur_lat;
-          	        	        	    	pre_lon = cur_lon;
+
+          	        	        	    	ssd1306_SetCursor(2,50);
+          	        	        	    	ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
+          	        	        	    	ssd1306_UpdateScreen();
           	        	        	      }
           	        	        	      else
           	        	        	      {
-          	        	        	    	distance += calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
-											sprintf(buf1,"%0.4f",distance);
+
+          	        	        	    	new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
+          	        	        	    	if (new_distance > MIN_GPS_DISTANCE){
+          	        	        	    		total_distance += new_distance;
+          	        	        	    	}
+											sprintf(buf1,"%0.2f",distance);
 											ssd1306_SetCursor(2,45);
 											ssd1306_WriteString(buf1, Font_11x18, White);
 											ssd1306_UpdateScreen();
-          	        	        	      }
 
-											pre_lat = cur_lat;
-											pre_lon = cur_lon;
+          	        	        	      }
+          	        	        	      pre_lat = cur_lat;
+          	        	        	      pre_lon = cur_lon;
+          	        	        	    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+
 
       /* USER CODE END WHILE */
                 }
