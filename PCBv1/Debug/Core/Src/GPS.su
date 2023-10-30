@@ -1,0 +1,3 @@
+../Core/Src/GPS.c:91:8:ddm2dd	40	static
+../Core/Src/GPS.c:99:8:degreesToRadians	16	static
+../Core/Src/GPS.c:104:8:calculateDistance	104	static
