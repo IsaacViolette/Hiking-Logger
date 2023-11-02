@@ -176,16 +176,17 @@ int main(void)
             uint16_t  num_steps  = 0;
             float total_distance = 0;
             float new_distance;
+            float miles;
             //char buf[20];
             HAL_UART_Receive_IT(&huart1, &nmea, 1);
             while (1)
             {
             	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
 				//[x1,y1,z1,x2,y2,z2...x400,y400,z400]
-				int8_t acc[NUM_SAMPLES_IN_CSV_FILE*3] = {0};
+				int8_t acc[NUM_SAMPLES*3] = {0};
 				uint16_t i    = 0;
 				float    temp = 0;
-				while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
+				while(i < NUM_SAMPLES*3) //while data array is being filled
 				{
 					  HAL_Delay(50); //20Hz
 					  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
@@ -196,9 +197,9 @@ int main(void)
 
 					  if (lis3dh_xyz_available(&lis3dh)) {
 							status = lis3dh_get_xyz(&lis3dh);
-							float xx = lis3dh.x/16384;
-							float yy = lis3dh.y/16384;
-							float zz = lis3dh.z/16384;
+							float xx = lis3dh.x/ACCEL_DATA_SCALER;
+							float yy = lis3dh.y/ACCEL_DATA_SCALER;
+							float zz = lis3dh.z/ACCEL_DATA_SCALER;
 
 							temp     = roundf(xx*scale_factor);
 							acc[i++] = (int8_t)temp;
@@ -216,7 +217,7 @@ int main(void)
 				  }
 				  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
 					  int8_t   data[NUM_TUPLES*3] = {0};
-					  uint8_t  num_segments       = NUM_SAMPLES_IN_CSV_FILE/(SAMPLING_RATE*WINDOW_LENGTH);
+					  uint8_t  num_segments       = NUM_SAMPLES/(SAMPLING_RATE*WINDOW_LENGTH);
 					  uint16_t j                  = 0;
 
 					  for (i = 0; i < num_segments; i++) {
@@ -234,7 +235,7 @@ int main(void)
 					  ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
 					  ssd1306_SetCursor(2,30);
 					  ssd1306_WriteString("Distance:", Font_11x18, White);
-					  ssd1306_UpdateScreen();
+					  //ssd1306_UpdateScreen();
 
 					  if((pre_lat == 0) && (pre_lon == 0))
 					  {
@@ -248,7 +249,14 @@ int main(void)
 						  if (new_distance > MIN_GPS_DISTANCE){
 							  total_distance += new_distance;
 						  }
-						  sprintf(buf1,"%0.2f",total_distance);
+						  if (total_distance < 400)
+						  {
+							  sprintf(buf1,"%0.2f meters",total_distance);
+						  }
+						  else{
+							  miles = total_distance / METERS_TO_MILES;
+							  sprintf(buf1,"%0.2f miles",miles);
+						  }
 						  ssd1306_SetCursor(2,45);
 						  ssd1306_WriteString(buf1, Font_11x18, White);
 						  ssd1306_UpdateScreen();

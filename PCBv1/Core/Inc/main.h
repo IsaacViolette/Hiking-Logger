@@ -67,8 +67,10 @@ void Error_Handler(void);
 #define Accel_SDA_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-#define NUM_SAMPLES_IN_CSV_FILE 512//400
+#define NUM_SAMPLES 512//400
+#define ACCEL_DATA_SCALER 16384
 #define MIN_GPS_DISTANCE 5
+#define METERS_TO_MILES 1609.34
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
