@@ -2,10 +2,10 @@
 ../Core/Src/main.c:118:8:get_lon	4
 ../Core/Src/main.c:143:8:get_alt	3
 ../Core/Src/main.c:168:6:HAL_UART_RxCpltCallback	7
-../Core/Src/main.c:199:5:main	11
-../Core/Src/main.c:355:6:SystemClock_Config	4
-../Core/Src/main.c:400:13:MX_I2C1_Init	4
-../Core/Src/main.c:448:13:MX_I2C2_Init	4
-../Core/Src/main.c:496:13:MX_USART2_UART_Init	2
-../Core/Src/main.c:532:13:MX_GPIO_Init	1
-../Core/Src/main.c:553:6:Error_Handler	1
+../Core/Src/main.c:200:5:main	11
+../Core/Src/main.c:358:6:SystemClock_Config	4
+../Core/Src/main.c:406:13:MX_I2C1_Init	4
+../Core/Src/main.c:454:13:MX_I2C2_Init	4
+../Core/Src/main.c:502:13:MX_USART1_UART_Init	2
+../Core/Src/main.c:539:13:MX_GPIO_Init	1
+../Core/Src/main.c:572:6:Error_Handler	1
