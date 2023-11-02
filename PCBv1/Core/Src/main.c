@@ -40,8 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUM_SAMPLES_IN_CSV_FILE 512//400
-#define MIN_GPS_DISTANCE 5
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -90,87 +89,11 @@ double pre_lat = 0;
 double pre_lon = 0;
 double alt = 0;
 
-double get_lat(char *gga)
-{
-	double latitude = 0.0;
-
-	char gga_cpy[256];
-	strncpy(gga_cpy, gga, 256);
-
-	char *token = strtok(gga_cpy, ",");
-
-	while (token != NULL)
-	{
-		if ((strcmp(token, "N") == 0) || (strcmp(token, "S") == 0))
-		{
-			break;
-		}
-		else
-		{
-			latitude = atof(token);
-		}
-			token = strtok(NULL, ",");
-	}
-
-		return latitude;
-}
-
-double get_lon(char *gga)
-{
-	double longitude = 0.0;
-
-	char gga_cpy[256];
-	strncpy(gga_cpy, gga, 256);
-
-	char *token = strtok(gga_cpy, ",");
-
-	while (token != NULL)
-	{
-		if ((strcmp(token, "W") == 0) || (strcmp(token, "E") == 0))
-		{
-			break;
-		}
-		else
-		{
-			longitude = atof(token);
-		}
-			token = strtok(NULL, ",");
-	}
-
-		return longitude;
-}
-
-double get_alt(char *gga)
-{
-	double altitude = 0.0;
-
-	char gga_cpy[256];
-	strncpy(gga_cpy, gga, 256);
-
-	char *token = strtok(gga_cpy, ",");
-
-	while (token != NULL)
-	{
-		if (strcmp(token, "M") == 0)
-		{
-			break;
-		}
-		else
-		{
-			altitude = atof(token);
-		}
-			token = strtok(NULL, ",");
-	}
-
-		return altitude;
-}
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart == &huart1) {
 
         nmea_buf[i++] = nmea;
-        //char buf1[16];
-        //char buf2[16];
 
         if (nmea == '\n' || i >= sizeof(nmea_buf) - 1) {
         	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
@@ -256,92 +179,83 @@ int main(void)
             //char buf[20];
             HAL_UART_Receive_IT(&huart1, &nmea, 1);
             while (1)
-                  {
+            {
             	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
-            	        	    	    //[x1,y1,z1,x2,y2,z2...x400,y400,z400]
-            	        	    	    int8_t acc[NUM_SAMPLES_IN_CSV_FILE*3] = {0};
-            	        	    	    uint16_t i    = 0;
-            	        	    	    float    temp = 0;
-            	        	    	    while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
-            	        	        	{
-            	        	    			  HAL_Delay(50); //20Hz
-            	        	    			  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+				//[x1,y1,z1,x2,y2,z2...x400,y400,z400]
+				int8_t acc[NUM_SAMPLES_IN_CSV_FILE*3] = {0};
+				uint16_t i    = 0;
+				float    temp = 0;
+				while(i < NUM_SAMPLES_IN_CSV_FILE*3) //while data array is being filled
+				{
+					  HAL_Delay(50); //20Hz
+					  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
 
-            	        	    			//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
-            	        	    			//and then calculating the max of that data. then divide that by 127 to get the scaling factor
-            	        	    			  float scale_factor = 55.3293;
+					//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
+					//and then calculating the max of that data. then divide that by 127 to get the scaling factor
+					  float scale_factor = 55.3293;
 
-            	        					  if (lis3dh_xyz_available(&lis3dh)) {
-            	        							status = lis3dh_get_xyz(&lis3dh);
-            	        							float xx = lis3dh.x/16384;
-            	        							float yy = lis3dh.y/16384;
-            	        							float zz = lis3dh.z/16384;
+					  if (lis3dh_xyz_available(&lis3dh)) {
+							status = lis3dh_get_xyz(&lis3dh);
+							float xx = lis3dh.x/16384;
+							float yy = lis3dh.y/16384;
+							float zz = lis3dh.z/16384;
 
-            	        							temp     = roundf(xx*scale_factor);
-            	        							acc[i++] = (int8_t)temp;
+							temp     = roundf(xx*scale_factor);
+							acc[i++] = (int8_t)temp;
 
-            	        							temp     = roundf(yy*scale_factor);
-            	        							acc[i++] = (int8_t)temp;
+							temp     = roundf(yy*scale_factor);
+							acc[i++] = (int8_t)temp;
 
-            	        							temp     = roundf(zz*scale_factor);
-            	        							acc[i++] = (int8_t)temp;
+							temp     = roundf(zz*scale_factor);
+							acc[i++] = (int8_t)temp;
 
-            	        							//printf("%f, %f, %f\r\n",xx,yy,zz);
-            	        							// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+							//printf("%f, %f, %f\r\n",xx,yy,zz);
+							// You now have raw acceleration of gravity in lis3dh->x, y, and z.
 
-            	        						  }
-            	        	        	  }
-            	        	        	  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
-            	        	        	      int8_t   data[NUM_TUPLES*3] = {0};
-            	        	        	      uint8_t  num_segments       = NUM_SAMPLES_IN_CSV_FILE/(SAMPLING_RATE*WINDOW_LENGTH);
-            	        	        	      uint16_t j                  = 0;
+						  }
+				  }
+				  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
+					  int8_t   data[NUM_TUPLES*3] = {0};
+					  uint8_t  num_segments       = NUM_SAMPLES_IN_CSV_FILE/(SAMPLING_RATE*WINDOW_LENGTH);
+					  uint16_t j                  = 0;
 
-            	        	        	      for (i = 0; i < num_segments; i++) {
-            	        	        	          for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
-            	        	        	              data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
-            	        	        	          }
-            	        	        	          num_steps += count_steps(data);
-            	        	        	      }
+					  for (i = 0; i < num_segments; i++) {
+						  for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
+							  data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
+						  }
+						  num_steps += count_steps(data);
+					  }
 
-            	        	        	      //printf("num steps: %i\n\r", num_steps);
-            	        	        	      ssd1306_Fill(Black);
-            	        	        	      ssd1306_SetCursor(2,0);
-            	        	        	      ssd1306_WriteString("Steps:", Font_11x18, White);
-            	        	        	      ssd1306_SetCursor(2,15);
-            	        	        	      ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
-            	        	        	      ssd1306_SetCursor(2,30);
-            	        	        	      ssd1306_WriteString("Distance:", Font_11x18, White);
-  //          	        	        	  sprintf(buf1,"%0.4f",cur_lat);
-  //          	        	        	  ssd1306_WriteString(buf1, Font_11x18, White);
-  //          	        	        	  ssd1306_SetCursor(2,45);
-  //          	        	        	  ssd1306_WriteString("20 miles", Font_11x18, White);
-  //          	        	        	  sprintf(buf2,"%0.4f",cur_lon);
-  //          	        	        	  ssd1306_WriteString(buf2, Font_11x18, White);
-            	        	        	      ssd1306_UpdateScreen();
+					  //printf("num steps: %i\n\r", num_steps);
+					  ssd1306_Fill(Black);
+					  ssd1306_SetCursor(2,0);
+					  ssd1306_WriteString("Steps:", Font_11x18, White);
+					  ssd1306_SetCursor(2,15);
+					  ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
+					  ssd1306_SetCursor(2,30);
+					  ssd1306_WriteString("Distance:", Font_11x18, White);
+					  ssd1306_UpdateScreen();
 
-            	        	        	      if((pre_lat == 0) && (pre_lon == 0))
-            	        	        	      {
+					  if((pre_lat == 0) && (pre_lon == 0))
+					  {
+						  ssd1306_SetCursor(2,50);
+						  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
+						  ssd1306_UpdateScreen();
+					  }
+					  else
+					  {
+						  new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
+						  if (new_distance > MIN_GPS_DISTANCE){
+							  total_distance += new_distance;
+						  }
+						  sprintf(buf1,"%0.2f",total_distance);
+						  ssd1306_SetCursor(2,45);
+						  ssd1306_WriteString(buf1, Font_11x18, White);
+						  ssd1306_UpdateScreen();
 
-            	        	        	    	ssd1306_SetCursor(2,50);
-            	        	        	    	ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
-            	        	        	    	ssd1306_UpdateScreen();
-            	        	        	      }
-            	        	        	      else
-            	        	        	      {
-
-            	        	        	    	new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
-            	        	        	    	if (new_distance > MIN_GPS_DISTANCE){
-            	        	        	    		total_distance += new_distance;
-            	        	        	    	}
-  											sprintf(buf1,"%0.2f",total_distance);
-  											ssd1306_SetCursor(2,45);
-  											ssd1306_WriteString(buf1, Font_11x18, White);
-  											ssd1306_UpdateScreen();
-
-            	        	        	      }
-            	        	        	      pre_lat = cur_lat;
-            	        	        	      pre_lon = cur_lon;
-            	        	        	    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+					  }
+					  pre_lat = cur_lat;
+					  pre_lon = cur_lon;
 
 
     /* USER CODE END WHILE */
