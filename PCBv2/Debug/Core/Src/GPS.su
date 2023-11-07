@@ -1,0 +1,6 @@
+../Core/Src/GPS.c:14:8:get_lat	288	static
+../Core/Src/GPS.c:39:8:get_lon	288	static
+../Core/Src/GPS.c:64:8:get_alt	288	static
+../Core/Src/GPS.c:90:8:ddm2dd	40	static
+../Core/Src/GPS.c:98:8:degreesToRadians	16	static
+../Core/Src/GPS.c:103:8:calculateDistance	104	static
