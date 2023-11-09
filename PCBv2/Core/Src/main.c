@@ -101,13 +101,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         nmea_buf[i++] = nmea;
 
         if (nmea == '\n' || i >= sizeof(nmea_buf) - 1) {
-        	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
         	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A')
         	{
         		memcpy(nmea_gga, nmea_buf, 256);
         		cur_lat = get_lat(nmea_gga);
         		cur_lon = get_lon(nmea_gga);
         		alt = get_alt(nmea_gga);
+        		//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
 
         	}
 
@@ -155,45 +155,118 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_FATFS_Init();
+  /* USER CODE BEGIN 2 */
+    char buf1[16];
+      //char buf2[16];
+  /* USER CODE END 2 */
+    status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
 
-  	HAL_Delay(1000); //a short delay is important to let the SD card settle
+    char message[64] = "Starting Up";
+    ssd1306_Init();
+    ssd1306_Fill(Black);
+    ssd1306_SetCursor(2,0);
+    ssd1306_WriteString(message, Font_11x18, White);
+    ssd1306_UpdateScreen();
 
-    //some variables for FatFs
-    FATFS FatFs; 	//Fatfs handle
-    FIL fil; 		//File handle
-    FRESULT fres; //Result after operations
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+              uint16_t  num_steps  = 0;
+              float total_distance = 0;
+              float new_distance;
+              float miles;
+              //char buf[20];
+              HAL_UART_Receive_IT(&huart1, &nmea, 1);
+              while (1)
+              {
+              	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
+  				//[x1,y1,z1,x2,y2,z2...x400,y400,z400]
+  				int8_t acc[NUM_SAMPLES*3] = {0};
+  				uint16_t i    = 0;
+  				float    temp = 0;
+  				while(i < NUM_SAMPLES*3) //while data array is being filled
+  				{
+  					  HAL_Delay(50); //20Hz
+  					  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
 
-    //Open the file system
-    fres = f_mount(&FatFs, "", 1); //1=mount now
-    if (fres != FR_OK) {
-    	while(1);
+  					//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
+  					//and then calculating the max of that data. then divide that by 127 to get the scaling factor
+  					  float scale_factor = 55.3293;
+
+  					  if (lis3dh_xyz_available(&lis3dh)) {
+  							status = lis3dh_get_xyz(&lis3dh);
+  							float xx = lis3dh.x/ACCEL_DATA_SCALER;
+  							float yy = lis3dh.y/ACCEL_DATA_SCALER;
+  							float zz = lis3dh.z/ACCEL_DATA_SCALER;
+
+  							temp     = roundf(xx*scale_factor);
+  							acc[i++] = (int8_t)temp;
+
+  							temp     = roundf(yy*scale_factor);
+  							acc[i++] = (int8_t)temp;
+
+  							temp     = roundf(zz*scale_factor);
+  							acc[i++] = (int8_t)temp;
+
+  							//printf("%f, %f, %f\r\n",xx,yy,zz);
+  							// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+
+  						  }
+  				  }
+  				  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
+  					  int8_t   data[NUM_TUPLES*3] = {0};
+  					  uint8_t  num_segments       = NUM_SAMPLES/(SAMPLING_RATE*WINDOW_LENGTH);
+  					  uint16_t j                  = 0;
+
+  					  for (i = 0; i < num_segments; i++) {
+  						  for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
+  							  data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
+  						  }
+  						  num_steps += count_steps(data);
+  					  }
+
+  					  //printf("num steps: %i\n\r", num_steps);
+  					  ssd1306_Fill(Black);
+  					  ssd1306_SetCursor(2,0);
+  					  ssd1306_WriteString("Steps:", Font_11x18, White);
+  					  ssd1306_SetCursor(2,15);
+  					  ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
+  					  ssd1306_SetCursor(2,30);
+  					  ssd1306_WriteString("Distance:", Font_11x18, White);
+  					  //ssd1306_UpdateScreen();
+
+  					  if((pre_lat == 0) && (pre_lon == 0))
+  					  {
+  						  ssd1306_SetCursor(2,50);
+  						  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
+  						  ssd1306_UpdateScreen();
+  					  }
+  					  else
+  					  {
+  						  new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
+  						  if (new_distance > MIN_GPS_DISTANCE){
+  							  total_distance += new_distance;
+  						  }
+  						  if (total_distance < 400)
+  						  {
+  							  sprintf(buf1,"%0.2f meters",total_distance);
+  						  }
+  						  else{
+  							  miles = total_distance / METERS_TO_MILES;
+  							  sprintf(buf1,"%0.2f miles",miles);
+  						  }
+  						  ssd1306_SetCursor(2,45);
+  						  ssd1306_WriteString(buf1, Font_11x18, White);
+  						  ssd1306_UpdateScreen();
+
+  					  }
+  					  pre_lat = cur_lat;
+  					  pre_lon = cur_lon;
+
+
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
     }
-
-    //Now let's try and write a file "write.txt"
-    fres = f_open(&fil, "write.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-
-    //Read 30 bytes from "test.txt" on the SD card
-    BYTE readBuf[30];
-
-    //Copy in a string
-    strncpy((char*)readBuf, "", 30);
-    UINT bytesWrote;
-    fres = f_write(&fil, readBuf, 30, &bytesWrote);
-
-    //Be a tidy kiwi - don't forget to close your file!
-    f_close(&fil);
-
-    //We're done, so de-mount the drive
-    f_mount(NULL, "", 0);
-
-    /* USER CODE END 2 */
-
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
-  while(1)
-  {
-
-  }
   /* USER CODE END 3 */
 }
 
@@ -404,8 +477,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT|UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
-  huart1.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_RXOVERRUNDISABLE_INIT;
   huart1.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
   if (HAL_UART_Init(&huart1) != HAL_OK)
   {
@@ -432,9 +504,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : SD_CS_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin;
@@ -442,6 +521,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
