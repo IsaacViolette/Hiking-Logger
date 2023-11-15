@@ -161,6 +161,7 @@ int main(void)
 	MX_USART1_UART_Init();
 	MX_FATFS_Init();
 
+	/* Create new file on MicroSD */
 	HAL_Delay(1000);
 	f_mount(&FatFs, "", 1); //1=mount now
 	f_open(&fil, "crds.txt", FA_CREATE_ALWAYS | FA_OPEN_ALWAYS);
@@ -169,6 +170,7 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	char buf1[16];
+	char sd[24];
 	/* USER CODE END 2 */
 	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
 	if (status != HAL_OK) {
@@ -184,8 +186,6 @@ int main(void)
 	  ssd1306_SetCursor(2,0);
 	  ssd1306_WriteString(message, Font_11x18, White);
 	  ssd1306_UpdateScreen();
-
-
 
 	  /* USER CODE END 2 */
 
@@ -260,7 +260,10 @@ int main(void)
 							  ssd1306_SetCursor(2,50);
 							  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
 							  ssd1306_UpdateScreen();
-
+						  }
+						  else
+						  {
+							  sprintf(sd,"%f,%f\n",pre_lat,pre_lon);
 							  //Open the file system
 								fres = f_mount(&FatFs, "", 1); //1=mount now
 								if (fres != FR_OK) {
@@ -272,8 +275,8 @@ int main(void)
 								fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
 								if(fres == FR_OK) {
 									f_lseek(&fil, f_size(&fil));
-									strncpy((char*)readBuf, "a new file is made!\n", 20);
-									fres = f_write(&fil, readBuf, 20, &bytesWrote);
+									strncpy((char*)readBuf, sd, 24);
+									fres = f_write(&fil, readBuf, 24, &bytesWrote);
 									if(fres == FR_OK) {
 									} else {
 										HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
@@ -289,9 +292,7 @@ int main(void)
 
 								//We're done, so de-mount the drive
 								f_mount(NULL, "", 0);
-						  }
-						  else
-						  {
+
 							  new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
 							  if (new_distance > MIN_GPS_DISTANCE){
 								  total_distance += new_distance;

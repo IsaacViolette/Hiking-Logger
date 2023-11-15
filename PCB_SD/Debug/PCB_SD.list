@@ -39,13 +39,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  0001a7b0  00000000  00000000  0002da9a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   0000e300  00000000  00000000  0004824a  2**0
+ 18 .debug_line   0000e994  00000000  00000000  0004824a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    0009d11a  00000000  00000000  0005654a  2**0
+ 19 .debug_str    0009d120  00000000  00000000  00056bde  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  00002a90  00000000  00000000  000f3664  2**2
+ 20 .debug_frame  00002a90  00000000  00000000  000f3d00  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 0000006a  00000000  00000000  000f60f4  2**0
+ 21 .debug_line_str 00000070  00000000  00000000  000f6790  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1110,7 +1110,7 @@ __weak HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
         HAL_NVIC_SetPriority(SysTick_IRQn, TickPriority, 0U);
  8000690:	2200      	movs	r2, #0
  8000692:	6879      	ldr	r1, [r7, #4]
- 8000694:	f04f 30ff 	mov.w	r0, #4294967295	; 0xffffffff
+ 8000694:	f04f 30ff 	mov.w	r0, #4294967295
  8000698:	f000 f919 	bl	80008ce <HAL_NVIC_SetPriority>
         uwTickPrio = TickPriority;
  800069c:	4a0a      	ldr	r2, [pc, #40]	; (80006c8 <HAL_InitTick+0x74>)
@@ -1222,7 +1222,7 @@ __weak void HAL_Delay(uint32_t Delay)
   /* Add a period to guaranty minimum wait */
   if (wait < HAL_MAX_DELAY)
  800071e:	68fb      	ldr	r3, [r7, #12]
- 8000720:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8000720:	f1b3 3fff 	cmp.w	r3, #4294967295
  8000724:	d005      	beq.n	8000732 <HAL_Delay+0x26>
   {
     wait += (uint32_t)uwTickFreq;
@@ -1419,7 +1419,7 @@ __STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
 
   return (
            ((PreemptPriority & (uint32_t)((1UL << (PreemptPriorityBits)) - 1UL)) << SubPriorityBits) |
- 8000840:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
+ 8000840:	f04f 32ff 	mov.w	r2, #4294967295
  8000844:	69bb      	ldr	r3, [r7, #24]
  8000846:	fa02 f303 	lsl.w	r3, r2, r3
  800084a:	43da      	mvns	r2, r3
@@ -1428,7 +1428,7 @@ __STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
  8000850:	697b      	ldr	r3, [r7, #20]
  8000852:	409a      	lsls	r2, r3
            ((SubPriority     & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL)))
- 8000854:	f04f 31ff 	mov.w	r1, #4294967295	; 0xffffffff
+ 8000854:	f04f 31ff 	mov.w	r1, #4294967295
  8000858:	697b      	ldr	r3, [r7, #20]
  800085a:	fa01 f303 	lsl.w	r3, r1, r3
  800085e:	43d9      	mvns	r1, r3
@@ -1474,7 +1474,7 @@ __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
  8000890:	6053      	str	r3, [r2, #4]
   NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); /* set Priority for Systick Interrupt */
  8000892:	210f      	movs	r1, #15
- 8000894:	f04f 30ff 	mov.w	r0, #4294967295	; 0xffffffff
+ 8000894:	f04f 30ff 	mov.w	r0, #4294967295
  8000898:	f7ff ff8e 	bl	80007b8 <__NVIC_SetPriority>
   SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
  800089c:	4b05      	ldr	r3, [pc, #20]	; (80008b4 <SysTick_Config+0x40>)
@@ -4984,7 +4984,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
  8001c3e:	429a      	cmp	r2, r3
  8001c40:	d803      	bhi.n	8001c4a <HAL_SPI_Transmit+0x16c>
  8001c42:	683b      	ldr	r3, [r7, #0]
- 8001c44:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8001c44:	f1b3 3fff 	cmp.w	r3, #4294967295
  8001c48:	d102      	bne.n	8001c50 <HAL_SPI_Transmit+0x172>
  8001c4a:	683b      	ldr	r3, [r7, #0]
  8001c4c:	2b00      	cmp	r3, #0
@@ -5159,7 +5159,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
  8001d42:	429a      	cmp	r2, r3
  8001d44:	d803      	bhi.n	8001d4e <HAL_SPI_Transmit+0x270>
  8001d46:	683b      	ldr	r3, [r7, #0]
- 8001d48:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8001d48:	f1b3 3fff 	cmp.w	r3, #4294967295
  8001d4c:	d102      	bne.n	8001d54 <HAL_SPI_Transmit+0x276>
  8001d4e:	683b      	ldr	r3, [r7, #0]
  8001d50:	2b00      	cmp	r3, #0
@@ -5613,7 +5613,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
  8001fc8:	429a      	cmp	r2, r3
  8001fca:	d80b      	bhi.n	8001fe4 <HAL_SPI_TransmitReceive+0x21c>
  8001fcc:	6b3b      	ldr	r3, [r7, #48]	; 0x30
- 8001fce:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8001fce:	f1b3 3fff 	cmp.w	r3, #4294967295
  8001fd2:	d007      	beq.n	8001fe4 <HAL_SPI_TransmitReceive+0x21c>
       {
         errorcode = HAL_TIMEOUT;
@@ -5895,7 +5895,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
  8002188:	429a      	cmp	r2, r3
  800218a:	d803      	bhi.n	8002194 <HAL_SPI_TransmitReceive+0x3cc>
  800218c:	6b3b      	ldr	r3, [r7, #48]	; 0x30
- 800218e:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 800218e:	f1b3 3fff 	cmp.w	r3, #4294967295
  8002192:	d102      	bne.n	800219a <HAL_SPI_TransmitReceive+0x3d2>
  8002194:	6b3b      	ldr	r3, [r7, #48]	; 0x30
  8002196:	2b00      	cmp	r3, #0
@@ -6023,7 +6023,7 @@ static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout(SPI_HandleTypeDef *hspi, 
   {
     if (Timeout != HAL_MAX_DELAY)
  8002244:	683b      	ldr	r3, [r7, #0]
- 8002246:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8002246:	f1b3 3fff 	cmp.w	r3, #4294967295
  800224a:	d050      	beq.n	80022ee <SPI_WaitFlagStateUntilTimeout+0xe2>
     {
       if (((HAL_GetTick() - tmp_tickstart) >= tmp_timeout) || (tmp_timeout == 0U))
@@ -6239,7 +6239,7 @@ static HAL_StatusTypeDef SPI_WaitFifoStateUntilTimeout(SPI_HandleTypeDef *hspi, 
 
     if (Timeout != HAL_MAX_DELAY)
  800237e:	683b      	ldr	r3, [r7, #0]
- 8002380:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8002380:	f1b3 3fff 	cmp.w	r3, #4294967295
  8002384:	d050      	beq.n	8002428 <SPI_WaitFifoStateUntilTimeout+0x10c>
     {
       if (((HAL_GetTick() - tmp_tickstart) >= tmp_timeout) || (tmp_timeout == 0U))
@@ -6798,7 +6798,7 @@ void xmit_spi_multi (
 	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
  8002676:	683b      	ldr	r3, [r7, #0]
  8002678:	b29a      	uxth	r2, r3
- 800267a:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 800267a:	f04f 33ff 	mov.w	r3, #4294967295
  800267e:	6879      	ldr	r1, [r7, #4]
  8002680:	4803      	ldr	r0, [pc, #12]	; (8002690 <xmit_spi_multi+0x24>)
  8002682:	f7ff fa2c 	bl	8001ade <HAL_SPI_Transmit>
@@ -9305,7 +9305,7 @@ FRESULT move_window (	/* Returns FR_OK or FR_DISK_ERROR */
  800363c:	2b00      	cmp	r3, #0
  800363e:	d004      	beq.n	800364a <move_window+0x4a>
 				sector = 0xFFFFFFFF;	/* Invalidate window if data is not reliable */
- 8003640:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 8003640:	f04f 33ff 	mov.w	r3, #4294967295
  8003644:	603b      	str	r3, [r7, #0]
 				res = FR_DISK_ERR;
  8003646:	2301      	movs	r3, #1
@@ -9528,7 +9528,7 @@ DWORD get_fat (	/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFFF:Cluste
 
 	} else {
 		val = 0xFFFFFFFF;	/* Default value falls on disk error */
- 800379c:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 800379c:	f04f 33ff 	mov.w	r3, #4294967295
  80037a0:	617b      	str	r3, [r7, #20]
 
 		switch (fs->fs_type) {
@@ -9999,7 +9999,7 @@ FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
  8003ac6:	2b00      	cmp	r3, #0
  8003ac8:	d00c      	beq.n	8003ae4 <remove_chain+0x4a>
 		res = put_fat(fs, pclst, 0xFFFFFFFF);
- 8003aca:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
+ 8003aca:	f04f 32ff 	mov.w	r2, #4294967295
  8003ace:	6879      	ldr	r1, [r7, #4]
  8003ad0:	69b8      	ldr	r0, [r7, #24]
  8003ad2:	f7ff fef8 	bl	80038c6 <put_fat>
@@ -10032,7 +10032,7 @@ FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
  8003afc:	e02e      	b.n	8003b5c <remove_chain+0xc2>
 		if (nxt == 0xFFFFFFFF) return FR_DISK_ERR;	/* Disk error? */
  8003afe:	697b      	ldr	r3, [r7, #20]
- 8003b00:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003b00:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003b04:	d101      	bne.n	8003b0a <remove_chain+0x70>
  8003b06:	2301      	movs	r3, #1
  8003b08:	e028      	b.n	8003b5c <remove_chain+0xc2>
@@ -10157,7 +10157,7 @@ DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk err
  8003ba8:	e070      	b.n	8003c8c <create_chain+0x128>
 		if (cs == 0xFFFFFFFF) return cs;	/* A disk error occurred */
  8003baa:	68fb      	ldr	r3, [r7, #12]
- 8003bac:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003bac:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003bb0:	d101      	bne.n	8003bb6 <create_chain+0x52>
  8003bb2:	68fb      	ldr	r3, [r7, #12]
  8003bb4:	e06a      	b.n	8003c8c <create_chain+0x128>
@@ -10216,7 +10216,7 @@ DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk err
  8003bfe:	2b01      	cmp	r3, #1
  8003c00:	d003      	beq.n	8003c0a <create_chain+0xa6>
  8003c02:	68fb      	ldr	r3, [r7, #12]
- 8003c04:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003c04:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003c08:	d101      	bne.n	8003c0e <create_chain+0xaa>
  8003c0a:	68fb      	ldr	r3, [r7, #12]
  8003c0c:	e03e      	b.n	8003c8c <create_chain+0x128>
@@ -10231,7 +10231,7 @@ DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk err
  8003c1a:	bf00      	nop
 		}
 		res = put_fat(fs, ncl, 0xFFFFFFFF);	/* Mark the new cluster 'EOC' */
- 8003c1c:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
+ 8003c1c:	f04f 32ff 	mov.w	r2, #4294967295
  8003c20:	69f9      	ldr	r1, [r7, #28]
  8003c22:	6938      	ldr	r0, [r7, #16]
  8003c24:	f7ff fe4f 	bl	80038c6 <put_fat>
@@ -10288,7 +10288,7 @@ DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk err
  8003c7a:	7dfb      	ldrb	r3, [r7, #23]
  8003c7c:	2b01      	cmp	r3, #1
  8003c7e:	d102      	bne.n	8003c86 <create_chain+0x122>
- 8003c80:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 8003c80:	f04f 33ff 	mov.w	r3, #4294967295
  8003c84:	e000      	b.n	8003c88 <create_chain+0x124>
  8003c86:	2301      	movs	r3, #1
  8003c88:	61fb      	str	r3, [r7, #28]
@@ -10466,7 +10466,7 @@ FRESULT dir_sdi (	/* FR_OK(0):succeeded, !=0:error */
  8003d76:	6178      	str	r0, [r7, #20]
 			if (clst == 0xFFFFFFFF) return FR_DISK_ERR;	/* Disk error */
  8003d78:	697b      	ldr	r3, [r7, #20]
- 8003d7a:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003d7a:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003d7e:	d101      	bne.n	8003d84 <dir_sdi+0x88>
  8003d80:	2301      	movs	r3, #1
  8003d82:	e032      	b.n	8003dea <dir_sdi+0xee>
@@ -10631,7 +10631,7 @@ FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DENIED:Cou
  8003e7c:	e07a      	b.n	8003f74 <dir_next+0x182>
 				if (clst == 0xFFFFFFFF) return FR_DISK_ERR;		/* Disk error */
  8003e7e:	697b      	ldr	r3, [r7, #20]
- 8003e80:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003e80:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003e84:	d101      	bne.n	8003e8a <dir_next+0x98>
  8003e86:	2301      	movs	r3, #1
  8003e88:	e074      	b.n	8003f74 <dir_next+0x182>
@@ -10675,7 +10675,7 @@ FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DENIED:Cou
  8003ec6:	e055      	b.n	8003f74 <dir_next+0x182>
 					if (clst == 0xFFFFFFFF) return FR_DISK_ERR;	/* Disk error */
  8003ec8:	697b      	ldr	r3, [r7, #20]
- 8003eca:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8003eca:	f1b3 3fff 	cmp.w	r3, #4294967295
  8003ece:	d101      	bne.n	8003ed4 <dir_next+0xe2>
  8003ed0:	2301      	movs	r3, #1
  8003ed2:	e04f      	b.n	8003f74 <dir_next+0x182>
@@ -11555,7 +11555,7 @@ int get_ldnumber (		/* Returns logical drive number (-1:invalid drive) */
 	const TCHAR *tp, *tt;
 	UINT i;
 	int vol = -1;
- 80043aa:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 80043aa:	f04f 33ff 	mov.w	r3, #4294967295
  80043ae:	613b      	str	r3, [r7, #16]
 	char c;
 	TCHAR tc;
@@ -11665,7 +11665,7 @@ BYTE check_fs (	/* 0:FAT, 1:exFAT, 2:Valid BS but not FAT, 3:Not a BS, 4:Disk er
  8004438:	2200      	movs	r2, #0
  800443a:	70da      	strb	r2, [r3, #3]
  800443c:	687b      	ldr	r3, [r7, #4]
- 800443e:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
+ 800443e:	f04f 32ff 	mov.w	r2, #4294967295
  8004442:	62da      	str	r2, [r3, #44]	; 0x2c
 	if (move_window(fs, sect) != FR_OK) return 4;	/* Load boot record */
  8004444:	6839      	ldr	r1, [r7, #0]
@@ -12285,7 +12285,7 @@ FRESULT find_volume (	/* FR_OK(0): successful, !=0: any error occurred */
 		/* Get FSINFO if available */
 		fs->last_clst = fs->free_clst = 0xFFFFFFFF;		/* Initialize cluster allocation information */
  8004884:	6bbb      	ldr	r3, [r7, #56]	; 0x38
- 8004886:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
+ 8004886:	f04f 32ff 	mov.w	r2, #4294967295
  800488a:	611a      	str	r2, [r3, #16]
  800488c:	6bbb      	ldr	r3, [r7, #56]	; 0x38
  800488e:	691a      	ldr	r2, [r3, #16]
@@ -13029,7 +13029,7 @@ FRESULT f_open (
  8004d42:	f887 305f 	strb.w	r3, [r7, #95]	; 0x5f
 					if (clst == 0xFFFFFFFF) res = FR_DISK_ERR;
  8004d46:	6dbb      	ldr	r3, [r7, #88]	; 0x58
- 8004d48:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8004d48:	f1b3 3fff 	cmp.w	r3, #4294967295
  8004d4c:	d102      	bne.n	8004d54 <f_open+0x2ec>
  8004d4e:	2301      	movs	r3, #1
  8004d50:	f887 305f 	strb.w	r3, [r7, #95]	; 0x5f
@@ -13257,7 +13257,7 @@ FRESULT f_open (
  8004ec4:	e0c9      	b.n	800505a <f_read+0x276>
 				if (clst == 0xFFFFFFFF) ABORT(fs, FR_DISK_ERR);
  8004ec6:	6b3b      	ldr	r3, [r7, #48]	; 0x30
- 8004ec8:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8004ec8:	f1b3 3fff 	cmp.w	r3, #4294967295
  8004ecc:	d104      	bne.n	8004ed8 <f_read+0xf4>
  8004ece:	68fb      	ldr	r3, [r7, #12]
  8004ed0:	2201      	movs	r2, #1
@@ -13657,7 +13657,7 @@ FRESULT f_open (
  800515c:	e0f2      	b.n	8005344 <f_write+0x2e2>
 				if (clst == 0xFFFFFFFF) ABORT(fs, FR_DISK_ERR);
  800515e:	6abb      	ldr	r3, [r7, #40]	; 0x28
- 8005160:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 8005160:	f1b3 3fff 	cmp.w	r3, #4294967295
  8005164:	d104      	bne.n	8005170 <f_write+0x10e>
  8005166:	68fb      	ldr	r3, [r7, #12]
  8005168:	2201      	movs	r2, #1
@@ -14250,7 +14250,7 @@ FRESULT f_getfree (
  8005506:	62f8      	str	r0, [r7, #44]	; 0x2c
 					if (stat == 0xFFFFFFFF) { res = FR_DISK_ERR; break; }
  8005508:	6afb      	ldr	r3, [r7, #44]	; 0x2c
- 800550a:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
+ 800550a:	f1b3 3fff 	cmp.w	r3, #4294967295
  800550e:	d103      	bne.n	8005518 <f_getfree+0x7c>
  8005510:	2301      	movs	r3, #1
  8005512:	f887 3047 	strb.w	r3, [r7, #71]	; 0x47

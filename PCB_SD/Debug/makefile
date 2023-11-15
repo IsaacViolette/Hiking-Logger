@@ -64,8 +64,8 @@ all: main-build
 main-build: PCB_SD.elf secondary-outputs
 
 # Tool invocations
-PCB_SD.elf PCB_SD.map: $(OBJS) $(USER_OBJS) /Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/PCB_SD/STM32L412RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PCB_SD.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/martinguarnieri/STM32CubeIDE/workspace_1.13.1/PCB_SD/STM32L412RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PCB_SD.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+PCB_SD.elf PCB_SD.map: $(OBJS) $(USER_OBJS) C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking-Logger\PCB_SD\STM32L412RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "PCB_SD.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\20isv\STM32CubeIDE\workspace_1.13.1\Hiking-Logger\PCB_SD\STM32L412RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PCB_SD.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
