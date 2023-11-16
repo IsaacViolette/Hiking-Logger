@@ -107,8 +107,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         		cur_lat = get_lat(nmea_gga);
         		cur_lon = get_lon(nmea_gga);
         		alt = get_alt(nmea_gga);
-        		//HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_15);
-
         	}
 
             memset(nmea_buf, 0, sizeof(nmea_buf));
@@ -128,30 +126,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
 	//some variables for FatFs
 	FATFS FatFs; 	//Fatfs handle
 	FIL fil; 		//File handle
 	UINT bytesWrote;
 	FRESULT fres;
-	BYTE readBuf[30];
-	/* USER CODE END 1 */
-
-	/* MCU Configuration--------------------------------------------------------*/
+	BYTE readBuf[26];
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
 
-	/* USER CODE BEGIN Init */
-
-	/* USER CODE END Init */
-
 	/* Configure the system clock */
 	SystemClock_Config();
-
-	/* USER CODE BEGIN SysInit */
-
-	/* USER CODE END SysInit */
 
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
@@ -167,159 +153,135 @@ int main(void)
 	f_open(&fil, "crds.txt", FA_CREATE_ALWAYS | FA_OPEN_ALWAYS);
 	f_close(&fil);
 	f_mount(NULL, "", 0); //0=demount
-	/* USER CODE BEGIN 2 */
 
 	char buf1[16];
-	char sd[24];
-	/* USER CODE END 2 */
+	char sd[26];
+	char message[64] = "Starting Up";
+
 	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
-	if (status != HAL_OK) {
-	          	 //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
-	            // Unable to communicate with device!
+	if (status != HAL_OK)
+	{
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
 	}
 
+	ssd1306_Init();
+	ssd1306_Fill(Black);
+	ssd1306_SetCursor(2,0);
+	ssd1306_WriteString(message, Font_11x18, White);
+	ssd1306_UpdateScreen();
 
-	  char message[64] = "Starting Up";
-	  //ssd1306_TestAll();
-	  ssd1306_Init();
-	  ssd1306_Fill(Black);
-	  ssd1306_SetCursor(2,0);
-	  ssd1306_WriteString(message, Font_11x18, White);
-	  ssd1306_UpdateScreen();
+	uint16_t  num_steps  = 0;
+	float total_distance = 0;
+	float new_distance;
+	float miles;
+	HAL_UART_Receive_IT(&huart1, &nmea, 1);
 
-	  /* USER CODE END 2 */
+	while (1)
+	{
+		//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
+		//[x1,y1,z1,x2,y2,z2...x400,y400,z400]
+		int8_t acc[NUM_SAMPLES*3] = {0};
+		uint16_t i    = 0;
+		float    temp = 0;
+		while(i < NUM_SAMPLES*3) //while data array is being filled
+		{
+			HAL_Delay(50); //20Hz
 
-	  /* Infinite loop */
-	  /* USER CODE BEGIN WHILE */
-	            uint16_t  num_steps  = 0;
-	            float total_distance = 0;
-	            float new_distance;
-	            float miles;
-	            //char buf[20];
-	            HAL_UART_Receive_IT(&huart1, &nmea, 1);
-	            while (1)
-	            {
-	            	//hold the data from the CSV file in a fifo-like data structure where the accelerometer data looks like
-					//[x1,y1,z1,x2,y2,z2...x400,y400,z400]
-					int8_t acc[NUM_SAMPLES*3] = {0};
-					uint16_t i    = 0;
-					float    temp = 0;
-					while(i < NUM_SAMPLES*3) //while data array is being filled
-					{
-						  HAL_Delay(50); //20Hz
-						  //HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+			//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
+			//and then calculating the max of that data. then divide that by 127 to get the scaling factor
+			float scale_factor = 55.3293;
 
-						//scaling factor to convert the decimal data to int8 integers. calculated in matlab by taking the absolute value of all the data
-						//and then calculating the max of that data. then divide that by 127 to get the scaling factor
-						  float scale_factor = 55.3293;
+			if(lis3dh_xyz_available(&lis3dh)) {
+				status = lis3dh_get_xyz(&lis3dh);
+				float xx = lis3dh.x/ACCEL_DATA_SCALER;
+				float yy = lis3dh.y/ACCEL_DATA_SCALER;
+				float zz = lis3dh.z/ACCEL_DATA_SCALER;
 
-						  if (lis3dh_xyz_available(&lis3dh)) {
-								status = lis3dh_get_xyz(&lis3dh);
-								float xx = lis3dh.x/ACCEL_DATA_SCALER;
-								float yy = lis3dh.y/ACCEL_DATA_SCALER;
-								float zz = lis3dh.z/ACCEL_DATA_SCALER;
+				temp     = roundf(xx*scale_factor);
+				acc[i++] = (int8_t)temp;
 
-								temp     = roundf(xx*scale_factor);
-								acc[i++] = (int8_t)temp;
+				temp     = roundf(yy*scale_factor);
+				acc[i++] = (int8_t)temp;
 
-								temp     = roundf(yy*scale_factor);
-								acc[i++] = (int8_t)temp;
+				temp     = roundf(zz*scale_factor);
+				acc[i++] = (int8_t)temp;
+				// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+			}
+		}
+		//pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
+		int8_t   data[NUM_TUPLES*3] = {0};
+		uint8_t  num_segments       = NUM_SAMPLES/(SAMPLING_RATE*WINDOW_LENGTH);
+		uint16_t j                  = 0;
 
-								temp     = roundf(zz*scale_factor);
-								acc[i++] = (int8_t)temp;
+		for(i = 0; i < num_segments; i++) {
+			for(j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
+				data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
+			}
+			num_steps += count_steps(data);
+		}
 
-								//printf("%f, %f, %f\r\n",xx,yy,zz);
-								// You now have raw acceleration of gravity in lis3dh->x, y, and z.
+		ssd1306_Fill(Black);
+		ssd1306_SetCursor(2,0);
+		ssd1306_WriteString("Steps:", Font_11x18, White);
+		ssd1306_SetCursor(2,15);
+		ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
+		ssd1306_SetCursor(2,30);
+		ssd1306_WriteString("Distance:", Font_11x18, White);
 
-							  }
-					  }
-					  //pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop
-						  int8_t   data[NUM_TUPLES*3] = {0};
-						  uint8_t  num_segments       = NUM_SAMPLES/(SAMPLING_RATE*WINDOW_LENGTH);
-						  uint16_t j                  = 0;
+		if((pre_lat == 0) && (pre_lon == 0)) {
+		  ssd1306_SetCursor(2,50);
+		  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
+		  ssd1306_UpdateScreen();
+		}
+		else {
+			sprintf(sd,"%fN,%fW\n",pre_lat,pre_lon);
 
-						  for (i = 0; i < num_segments; i++) {
-							  for (j = SAMPLING_RATE*WINDOW_LENGTH*i*3; j < SAMPLING_RATE*WINDOW_LENGTH*(i+1)*3; j++) {
-								  data[j-SAMPLING_RATE*WINDOW_LENGTH*i*3] = acc[j];
-							  }
-							  num_steps += count_steps(data);
-						  }
+			fres = f_mount(&FatFs, "", 1); //1=mount now
+			if(fres != FR_OK) {
+				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+				while(1);
+			}
 
-						  //printf("num steps: %i\n\r", num_steps);
-						  ssd1306_Fill(Black);
-						  ssd1306_SetCursor(2,0);
-						  ssd1306_WriteString("Steps:", Font_11x18, White);
-						  ssd1306_SetCursor(2,15);
-						  ssd1306_WriteString(itoa(num_steps,message,10), Font_11x18, White);
-						  ssd1306_SetCursor(2,30);
-						  ssd1306_WriteString("Distance:", Font_11x18, White);
-						  //ssd1306_UpdateScreen();
+			fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
+			if(fres == FR_OK) {
+				f_lseek(&fil, f_size(&fil));
+				strncpy((char*)readBuf, sd, 26);
+				fres = f_write(&fil, readBuf, 26, &bytesWrote);
+				if(fres != FR_OK) {
+					HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+					while(1);
+				}
+			}
+			else {
+				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+				while(1);
+			}
 
-						  if((pre_lat == 0) && (pre_lon == 0))
-						  {
-							  ssd1306_SetCursor(2,50);
-							  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
-							  ssd1306_UpdateScreen();
-						  }
-						  else
-						  {
-							  sprintf(sd,"%f,%f\n",pre_lat,pre_lon);
-							  //Open the file system
-								fres = f_mount(&FatFs, "", 1); //1=mount now
-								if (fres != FR_OK) {
-									HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-									while(1);
-								}
+			f_close(&fil);
 
-								//Now let's try and write a file "write.txt"
-								fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
-								if(fres == FR_OK) {
-									f_lseek(&fil, f_size(&fil));
-									strncpy((char*)readBuf, sd, 24);
-									fres = f_write(&fil, readBuf, 24, &bytesWrote);
-									if(fres == FR_OK) {
-									} else {
-										HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-										while(1);
-									}
-								} else {
-									HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-									while(1);
-								}
+			f_mount(NULL, "", 0);
 
-								//Be a tidy kiwi - don't forget to close your file!
-								f_close(&fil);
+			new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
+			if (new_distance > MIN_GPS_DISTANCE){
+			  total_distance += new_distance;
+			}
+			if (total_distance < 400)
+			{
+			  sprintf(buf1,"%0.2f meters",total_distance);
+			}
+			else{
+			  miles = total_distance / METERS_TO_MILES;
+			  sprintf(buf1,"%0.2f miles",miles);
+			}
+			ssd1306_SetCursor(2,45);
+			ssd1306_WriteString(buf1, Font_11x18, White);
+			ssd1306_UpdateScreen();
 
-								//We're done, so de-mount the drive
-								f_mount(NULL, "", 0);
-
-							  new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
-							  if (new_distance > MIN_GPS_DISTANCE){
-								  total_distance += new_distance;
-							  }
-							  if (total_distance < 400)
-							  {
-								  sprintf(buf1,"%0.2f meters",total_distance);
-							  }
-							  else{
-								  miles = total_distance / METERS_TO_MILES;
-								  sprintf(buf1,"%0.2f miles",miles);
-							  }
-							  ssd1306_SetCursor(2,45);
-							  ssd1306_WriteString(buf1, Font_11x18, White);
-							  ssd1306_UpdateScreen();
-
-						  }
-						  pre_lat = cur_lat;
-						  pre_lon = cur_lon;
-
-
-	    /* USER CODE END WHILE */
-
-	    /* USER CODE BEGIN 3 */
-	  }
-	  /* USER CODE END 3 */
+		}
+			  pre_lat = cur_lat;
+			  pre_lon = cur_lon;
 	}
+}
 
 /**
   * @brief System Clock Configuration
