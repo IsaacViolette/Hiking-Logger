@@ -12,6 +12,7 @@
 
 double get_lat(char *gga);
 double get_lon(char *gga);
+void get_time(char *gga, char *time);
 double get_alt(char *gga);
 double ddm2dd(double ddm);
 double degreesToRadians(double degrees);

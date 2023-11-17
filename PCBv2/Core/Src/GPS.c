@@ -61,6 +61,28 @@ double get_lon(char *gga)
 		return longitude;
 }
 
+void get_time(char *gga, char *time)
+{
+	int hours, minutes, seconds;
+	char *comma1 = strchr(gga, ',');
+	char *comma2 = strchr(comma1 + 1, ',');
+
+	size_t length = comma2 - (comma1 + 1);
+
+	strncpy(time, comma1 + 1, length);
+	time[length] = '\0';
+
+	sscanf(time, "%2d%2d%2d", &hours, &minutes, &seconds);
+
+	hours -= 5;
+
+	if (hours < 0) {
+		hours += 24;
+	}
+
+	sprintf(time, "%02d:%02d:%02d\n", hours, minutes, seconds);
+}
+
 double get_alt(char *gga)
 {
 	double altitude = 0.0;
@@ -85,7 +107,6 @@ double get_alt(char *gga)
 
 		return altitude;
 }
-
 
 double ddm2dd(double ddm) {
     double degrees = floor(ddm / 100.0);

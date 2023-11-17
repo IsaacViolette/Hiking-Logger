@@ -92,6 +92,8 @@ double cur_lat = 0;
 double cur_lon = 0;
 double pre_lat = 0;
 double pre_lon = 0;
+char cur_time[9];
+char pre_time[9];
 double alt = 0;
 
 
@@ -106,6 +108,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         		memcpy(nmea_gga, nmea_buf, 256);
         		cur_lat = get_lat(nmea_gga);
         		cur_lon = get_lon(nmea_gga);
+        		get_time(nmea_gga, pre_time);
         		alt = get_alt(nmea_gga);
         	}
 
@@ -118,8 +121,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     }
 }
 
-/* USER CODE END 0 */
-
 /**
   * @brief  The application entry point.
   * @retval int
@@ -131,7 +132,7 @@ int main(void)
 	FIL fil; 		//File handle
 	UINT bytesWrote;
 	FRESULT fres;
-	BYTE readBuf[26];
+	BYTE writeBuf1[33];
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
@@ -155,7 +156,7 @@ int main(void)
 	f_mount(NULL, "", 0); //0=demount
 
 	char buf1[16];
-	char sd[26];
+	char sd1[33];
 	char message[64] = "Starting Up";
 
 	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
@@ -234,7 +235,7 @@ int main(void)
 		  ssd1306_UpdateScreen();
 		}
 		else {
-			sprintf(sd,"%fN,%fW\n",pre_lat,pre_lon);
+			sprintf(sd1,"%f,%f,%s",pre_lat,pre_lon,pre_time);
 
 			fres = f_mount(&FatFs, "", 1); //1=mount now
 			if(fres != FR_OK) {
@@ -245,8 +246,8 @@ int main(void)
 			fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
 			if(fres == FR_OK) {
 				f_lseek(&fil, f_size(&fil));
-				strncpy((char*)readBuf, sd, 26);
-				fres = f_write(&fil, readBuf, 26, &bytesWrote);
+				strncpy((char*)writeBuf1, sd1, 33);
+				fres = f_write(&fil, writeBuf1, 33, &bytesWrote);
 				if(fres != FR_OK) {
 					HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
 					while(1);
@@ -280,6 +281,7 @@ int main(void)
 		}
 			  pre_lat = cur_lat;
 			  pre_lon = cur_lon;
+			  strcpy(pre_time, cur_time);
 	}
 }
 
