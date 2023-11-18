@@ -132,7 +132,7 @@ int main(void)
 	FIL fil; 		//File handle
 	UINT bytesWrote;
 	FRESULT fres;
-	BYTE writeBuf1[33];
+	BYTE writeBuf1[35];
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
@@ -156,7 +156,7 @@ int main(void)
 	f_mount(NULL, "", 0); //0=demount
 
 	char buf1[16];
-	char sd1[33];
+	char sd1[35];
 	char message[64] = "Starting Up";
 
 	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
@@ -235,7 +235,7 @@ int main(void)
 		  ssd1306_UpdateScreen();
 		}
 		else {
-			sprintf(sd1,"%f,%f,%s",pre_lat,pre_lon,pre_time);
+			sprintf(sd1,"%fN,%fW,%s",pre_lat,pre_lon,pre_time);
 
 			fres = f_mount(&FatFs, "", 1); //1=mount now
 			if(fres != FR_OK) {
@@ -246,8 +246,8 @@ int main(void)
 			fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
 			if(fres == FR_OK) {
 				f_lseek(&fil, f_size(&fil));
-				strncpy((char*)writeBuf1, sd1, 33);
-				fres = f_write(&fil, writeBuf1, 33, &bytesWrote);
+				strncpy((char*)writeBuf1, sd1, 35);
+				fres = f_write(&fil, writeBuf1, 35, &bytesWrote);
 				if(fres != FR_OK) {
 					HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
 					while(1);

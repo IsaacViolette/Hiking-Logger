@@ -35,7 +35,7 @@
 /  f_unlink(), f_mkdir(), f_chmod(), f_rename(), f_truncate(), f_getfree()
 /  and optional writing functions as well. */
 
-#define _FS_MINIMIZE         0      /* 0 to 3 */
+#define _FS_MINIMIZE         2      /* 0 to 3 */
 /* This option defines minimization level to remove some basic API functions.
 /
 /   0: All basic functions are enabled.
@@ -44,7 +44,7 @@
 /   2: f_opendir(), f_readdir() and f_closedir() are removed in addition to 1.
 /   3: f_lseek() function is removed in addition to 2. */
 
-#define _USE_STRFUNC         2      /* 0:Disable or 1-2:Enable */
+#define _USE_STRFUNC         0      /* 0:Disable or 1-2:Enable */
 /* This option switches string functions, f_gets(), f_putc(), f_puts() and
 /  f_printf().
 /
@@ -56,10 +56,10 @@
 /* This option switches filtered directory read functions, f_findfirst() and
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
-#define _USE_MKFS            1
+#define _USE_MKFS            0
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
-#define _USE_FASTSEEK        1
+#define _USE_FASTSEEK        0
 /* This option switches fast seek feature. (0:Disable or 1:Enable) */
 
 #define	_USE_EXPAND		0
@@ -213,7 +213,7 @@
 /  When enable exFAT, also LFN needs to be enabled. (_USE_LFN >= 1)
 /  Note that enabling exFAT discards C89 compatibility. */
 
-#define _FS_NORTC	0
+#define _FS_NORTC	1
 #define _NORTC_MON	6
 #define _NORTC_MDAY	4
 #define _NORTC_YEAR	2015
