@@ -269,6 +269,8 @@ void ssd1306_SetCursor(uint8_t x, uint8_t y) {
 }
 
 // Draw line by Bresenhem's algorithm
+/*
+
 void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color) {
   int32_t deltaX = abs(x2 - x1);
   int32_t deltaY = abs(y2 - y1);
@@ -289,7 +291,7 @@ void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR 
     }
     else
     {
-    /*nothing to do*/
+    nothing to do
     }
         
     if(error2 < deltaX)
@@ -299,7 +301,7 @@ void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR 
     }
     else
     {
-    /*nothing to do*/
+    nothing to do
     }
   }
   return;
@@ -314,16 +316,16 @@ void ssd1306_Polyline(const SSD1306_VERTEX *par_vertex, uint16_t par_size, SSD13
   }
   else
   {
-    /*nothing to do*/
+    nothing to do
   }
   return;
 }
 
-/*Convert Degrees to Radians*/
+Convert Degrees to Radians
 static float ssd1306_DegToRad(float par_deg) {
     return (float)(par_deg * (float) 3.14159265 / (float)180.0);
 }
-/*Normalize degree to [0;360]*/
+Normalize degree to [0;360]
 static uint16_t ssd1306_NormalizeTo0_360(uint16_t par_deg) {
   uint16_t loc_angle;
   if(par_deg <= 360)
@@ -337,10 +339,10 @@ static uint16_t ssd1306_NormalizeTo0_360(uint16_t par_deg) {
   }
   return loc_angle;
 }
-/*DrawArc. Draw angle is beginning from 4 quart of trigonometric circle (3pi/2)
+DrawArc. Draw angle is beginning from 4 quart of trigonometric circle (3pi/2)
  * start_angle in degree
  * sweep in degree
- */
+
 void ssd1306_DrawArc(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle, uint16_t sweep, SSD1306_COLOR color) {
     #define CIRCLE_APPROXIMATION_SEGMENTS 36
     float approx_degree;
@@ -402,12 +404,12 @@ void ssd1306_DrawCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR 
             }
             else
             {
-              /*nothing to do*/
+              nothing to do
             }
         }
         else
         {
-          /*nothing to do*/
+          nothing to do
         }
         if(e2 > x) {
           x++;
@@ -415,7 +417,7 @@ void ssd1306_DrawCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR 
         }
         else
         {
-          /*nothing to do*/
+          nothing to do
         }
     } while(x <= 0);
 
@@ -431,7 +433,7 @@ void ssd1306_DrawRectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD13
 
   return;
 }
-
+*/
 void ssd1306_SetContrast(const uint8_t value) {
     const uint8_t kSetContrastControlRegister = 0x81;
     ssd1306_WriteCommand(kSetContrastControlRegister);
@@ -453,3 +455,4 @@ void ssd1306_SetDisplayOn(const uint8_t on) {
 uint8_t ssd1306_GetDisplayOn() {
     return SSD1306.DisplayOn;
 }
+
