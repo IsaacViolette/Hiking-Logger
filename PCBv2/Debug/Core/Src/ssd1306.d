@@ -29,7 +29,7 @@ Core/Src/ssd1306.o: ../Core/Src/ssd1306.c ../Core/Inc/ssd1306.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
- ../Core/Inc/ssd1306_conf.h ../Core/Inc/ssd1306_fonts.h ../Core/Inc/I2C.h
+ ../Core/Inc/ssd1306_fonts.h ../Core/Inc/ssd1306_conf.h ../Core/Inc/I2C.h
 ../Core/Inc/ssd1306.h:
 ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h:
 ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l412xx.h:
@@ -61,6 +61,6 @@ Core/Src/ssd1306.o: ../Core/Src/ssd1306.c ../Core/Inc/ssd1306.h \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h:
-../Core/Inc/ssd1306_conf.h:
 ../Core/Inc/ssd1306_fonts.h:
+../Core/Inc/ssd1306_conf.h:
 ../Core/Inc/I2C.h:

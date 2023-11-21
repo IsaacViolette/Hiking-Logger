@@ -166,7 +166,7 @@ int main(void)
 	}
 
 	ssd1306_Init();
-	ssd1306_Fill(Black);
+	//ssd1306_Fill(Black);
 	ssd1306_SetCursor(2,0);
 	ssd1306_WriteString(message, Font_11x18, White);
 	ssd1306_UpdateScreen();

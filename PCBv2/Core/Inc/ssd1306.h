@@ -15,7 +15,7 @@
 
 //_BEGIN_STD_C
 
-#include "ssd1306_conf.h"
+//#include "ssd1306_conf.h"
 #include "ssd1306_fonts.h"
 
 // SSD1306 OLED height in pixels

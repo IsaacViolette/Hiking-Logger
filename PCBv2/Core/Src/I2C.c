@@ -57,14 +57,6 @@ int8_t I2C_Start(I2C_TypeDef * I2Cx, uint32_t DevAddress, uint8_t Size, uint8_t 
 	
 	I2Cx->CR2 = tmpreg; 
 	
-	// Wait until TXIS flag is set 
-//	if (Direction != READ_FROM_SLAVE) {
-//		while((I2Cx->ISR & I2C_ISR_TXIS) == 0 && ((I2Cx->ISR & I2C_ISR_NACKF) == 0) ); 
-//	}
-//	
-//	if ( (I2Cx->ISR & I2C_ISR_NACKF) == I2C_ISR_NACKF )
-//		return -1;  // Failed
-	
    	return 0;  // Success
 }
 

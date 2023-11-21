@@ -17,10 +17,7 @@ void ssd1306_WriteCommand(uint8_t byte) {
 		uint8_t buffer[2];
 		buffer[0] = 0x00;
 		buffer[1] = byte;
-		//I2C_SendData(SSD1306_I2C_PORT, SSD1306_I2C_ADDR, buffer, 2);
 		I2C_SendData(SSD1306_I2C_PORT, SSD1306_I2C_ADDR, buffer, 2);
-		//I2C_SendData(SSD1306_I2C_PORT, SSD1306_I2C_ADDR, &byte, 1);
-    //HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x00, 1, &byte, 1, HAL_MAX_DELAY);
 }
 
 // Send data
@@ -31,7 +28,6 @@ void ssd1306_WriteData(uint8_t* buffer, size_t buff_size) {
 		for(i=0; i<buff_size;  i++)
 			buffer2[i+1] = buffer[i];
 		I2C_SendData(SSD1306_I2C_PORT, SSD1306_I2C_ADDR, buffer2, buff_size+1);
-    //HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, SSD1306_I2C_ADDR, 0x40, 1, buffer, buff_size, HAL_MAX_DELAY);
 }
 
 
@@ -59,7 +55,6 @@ void ssd1306_Init(void) {
     ssd1306_Reset();
 
     // Wait for the screen to boot
-    //delay(100);
 	  for(i=0; i<100000; i++)
 			;
 
@@ -72,11 +67,7 @@ void ssd1306_Init(void) {
 
     ssd1306_WriteCommand(0xB0); //Set Page Start Address for Page Addressing Mode,0-7
 
-#ifdef SSD1306_MIRROR_VERT
-    ssd1306_WriteCommand(0xC0); // Mirror vertically
-#else
     ssd1306_WriteCommand(0xC8); //Set COM Output Scan Direction
-#endif
 
     ssd1306_WriteCommand(0x00); //---set low column address
     ssd1306_WriteCommand(0x10); //---set high column address
@@ -85,35 +76,13 @@ void ssd1306_Init(void) {
 
     ssd1306_SetContrast(0xFF);
 
-#ifdef SSD1306_MIRROR_HORIZ
-    ssd1306_WriteCommand(0xA0); // Mirror horizontally
-#else
     ssd1306_WriteCommand(0xA1); //--set segment re-map 0 to 127 - CHECK
-#endif
 
-#ifdef SSD1306_INVERSE_COLOR
-    ssd1306_WriteCommand(0xA7); //--set inverse color
-#else
     ssd1306_WriteCommand(0xA6); //--set normal color
-#endif
 
-// Set multiplex ratio.
-#if (SSD1306_HEIGHT == 128)
-    // Found in the Luma Python lib for SH1106.
-    ssd1306_WriteCommand(0xFF);
-#else
-    ssd1306_WriteCommand(0xA8); //--set multiplex ratio(1 to 64) - CHECK
-#endif
+    // Set multiplex ratio.
+    ssd1306_WriteCommand(0x3F); //for 64 height display
 
-#if (SSD1306_HEIGHT == 32)
-    ssd1306_WriteCommand(0x1F); //
-#elif (SSD1306_HEIGHT == 64)
-    ssd1306_WriteCommand(0x3F); //
-#elif (SSD1306_HEIGHT == 128)
-    ssd1306_WriteCommand(0x3F); // Seems to work for 128px high displays too.
-#else
-#error "Only 32, 64, or 128 lines of height are supported!"
-#endif
 
     ssd1306_WriteCommand(0xA4); //0xa4,Output follows RAM content;0xa5,Output ignores RAM content
 
@@ -127,15 +96,8 @@ void ssd1306_Init(void) {
     ssd1306_WriteCommand(0x22); //
 
     ssd1306_WriteCommand(0xDA); //--set com pins hardware configuration - CHECK
-#if (SSD1306_HEIGHT == 32)
-    ssd1306_WriteCommand(0x02);
-#elif (SSD1306_HEIGHT == 64)
-    ssd1306_WriteCommand(0x12);
-#elif (SSD1306_HEIGHT == 128)
-    ssd1306_WriteCommand(0x12);
-#else
-#error "Only 32, 64, or 128 lines of height are supported!"
-#endif
+    ssd1306_WriteCommand(0x12);// for 64 height display
+
 
     ssd1306_WriteCommand(0xDB); //--set vcomh
     ssd1306_WriteCommand(0x20); //0x20,0.77xVcc
