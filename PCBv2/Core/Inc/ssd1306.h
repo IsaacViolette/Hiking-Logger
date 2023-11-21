@@ -18,27 +18,6 @@
 #include "ssd1306_conf.h"
 #include "ssd1306_fonts.h"
 
-/* vvv I2C config vvv
-
-#ifndef SSD1306_I2C_PORT
-#define SSD1306_I2C_PORT        I2C2
-#endif
-
-#ifndef SSD1306_I2C_ADDR
-#define SSD1306_I2C_ADDR        (0x3C<<1)//(0x3C << 1)
-#endif
-
- ^^^ I2C config ^^^ */
-
-
-//#if defined(SSD1306_USE_I2C)
-//extern I2C_HandleTypeDef SSD1306_I2C_PORT;
-//#elif defined(SSD1306_USE_SPI)
-//extern SPI_HandleTypeDef SSD1306_SPI_PORT;
-//#else
-//#error "You should define SSD1306_USE_SPI or SSD1306_USE_I2C macro!"
-//#endif
-
 // SSD1306 OLED height in pixels
 #ifndef SSD1306_HEIGHT
 #define SSD1306_HEIGHT          64
@@ -88,11 +67,7 @@ void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color);
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color);
 char ssd1306_WriteString(char* str, FontDef Font, SSD1306_COLOR color);
 void ssd1306_SetCursor(uint8_t x, uint8_t y);
-//void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color);
-//void ssd1306_DrawArc(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle, uint16_t sweep, SSD1306_COLOR color);
-//void ssd1306_DrawCircle(uint8_t par_x, uint8_t par_y, uint8_t par_r, SSD1306_COLOR color);
-//void ssd1306_Polyline(const SSD1306_VERTEX *par_vertex, uint16_t par_size, SSD1306_COLOR color);
-//void ssd1306_DrawRectangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR color);
+
 /**
  * @brief Sets the contrast of the display.
  * @param[in] value contrast to set.

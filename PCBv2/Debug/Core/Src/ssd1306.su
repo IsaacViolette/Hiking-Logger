@@ -9,6 +9,6 @@
 ../Core/Src/ssd1306.c:214:6:ssd1306_WriteChar	48	static
 ../Core/Src/ssd1306.c:249:6:ssd1306_WriteString	24	static
 ../Core/Src/ssd1306.c:266:6:ssd1306_SetCursor	16	static
-../Core/Src/ssd1306.c:437:6:ssd1306_SetContrast	24	static
-../Core/Src/ssd1306.c:443:6:ssd1306_SetDisplayOn	24	static
-../Core/Src/ssd1306.c:455:9:ssd1306_GetDisplayOn	4	static
+../Core/Src/ssd1306.c:272:6:ssd1306_SetContrast	24	static
+../Core/Src/ssd1306.c:278:6:ssd1306_SetDisplayOn	24	static
+../Core/Src/ssd1306.c:290:9:ssd1306_GetDisplayOn	4	static

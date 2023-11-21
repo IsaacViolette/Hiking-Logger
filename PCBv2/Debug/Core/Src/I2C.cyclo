@@ -1,9 +1,7 @@
-../Core/Src/I2C.c:23:6:I2C_GPIO_init	1
-../Core/Src/I2C.c:48:6:I2C_Initialization	4
-../Core/Src/I2C.c:157:8:I2C_Start	2
-../Core/Src/I2C.c:207:6:I2C_Stop	2
-../Core/Src/I2C.c:217:6:I2C_WaitLineIdle	2
-../Core/Src/I2C.c:225:8:I2C_SendData	9
-../Core/Src/I2C.c:268:8:I2C_ReceiveData	6
-../Core/Src/I2C.c:293:6:I2C1_EV_IRQHandler	1
-../Core/Src/I2C.c:297:6:I2C1_ER_IRQHandler	1
+../Core/Src/I2C.c:162:8:I2C_Start	2
+../Core/Src/I2C.c:212:6:I2C_Stop	2
+../Core/Src/I2C.c:222:6:I2C_WaitLineIdle	2
+../Core/Src/I2C.c:230:8:I2C_SendData	9
+../Core/Src/I2C.c:273:8:I2C_ReceiveData	6
+../Core/Src/I2C.c:298:6:I2C1_EV_IRQHandler	1
+../Core/Src/I2C.c:302:6:I2C1_ER_IRQHandler	1
