@@ -157,7 +157,7 @@ int main(void)
 
 	char buf1[16];
 	char sd1[35];
-	char message[64] = "Starting Up";
+	char message[64];
 
 	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
 	if (status != HAL_OK)
@@ -166,10 +166,12 @@ int main(void)
 	}
 
 	ssd1306_Init();
-	//ssd1306_Fill(Black);
 	ssd1306_SetCursor(2,0);
-	ssd1306_WriteString(message, Font_11x18, White);
+	ssd1306_WriteString("Steps:", Font_11x18, White);
+	ssd1306_SetCursor(2,30);
+	ssd1306_WriteString("Distance:", Font_11x18, White);
 	ssd1306_UpdateScreen();
+
 
 	uint16_t  num_steps  = 0;
 	float total_distance = 0;
