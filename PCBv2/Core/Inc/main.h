@@ -80,7 +80,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 #define NUM_SAMPLES 480//400
-#define ACCEL_DATA_SCALER 16384
+#define ACCEL_DATA_SCALER 16384 //32767 full 16-bit accelerometer range in 2g mode
 #define MIN_GPS_DISTANCE 5
 #define METERS_TO_MILES 1609.34
 
