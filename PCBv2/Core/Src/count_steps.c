@@ -8,9 +8,9 @@
 #define DERIV_FILT_LEN          5           //length of derivative filter
 #define LPF_FILT_LEN            9           //length of FIR low pass filter
 #define AUTOCORR_DELTA_AMPLITUDE_THRESH 5e8 //this is the min delta between peak and trough of autocorrelation peak
-#define AUTOCORR_MIN_HALF_LEN   3           //this is the min number of points the autocorrelation peak should be on either side of the peak
+#define AUTOCORR_MIN_HALF_LEN   3           // 3 this is the min number of points the autocorrelation peak should be on either side of the peak
 
-static int8_t deriv_coeffs[DERIV_FILT_LEN]        = {-6,31,0,-31,6};            //coefficients of derivative filter from https://www.dsprelated.com/showarticle/814.php
+static int8_t deriv_coeffs[DERIV_FILT_LEN]        = {-3,31,0,-31,3};            // -6, 6 coefficients of derivative filter from https://www.dsprelated.com/showarticle/814.php
 static int8_t lpf_coeffs[LPF_FILT_LEN]            = {-5,6,34,68,84,68,34,6,-5}; //coefficients of FIR low pass filter generated in matlab using FDATOOL
 static uint8_t mag_sqrt[NUM_TUPLES]               = {0};                        //this holds the square root of magnitude data of X,Y,Z (so its length is NUM_SAMPLES/3)
 static int32_t lpf[NUM_TUPLES]                    = {0};                        //hold the low pass filtered signal

@@ -9,7 +9,7 @@
 #define INC_LIS3DH_H_
 
 #include <stdbool.h>
-//#include "stm32l4xx_hal.h"
+
 #include "stm32l4xx.h"
 typedef struct lis3dh {
 	/* The HAL I2C_HandleTypeDef. */
@@ -22,7 +22,6 @@ typedef struct lis3dh {
 	int x;
 	int y;
 	int z;
-	int t;
 
 	/* Buffer for data read from the device. Must be 6 bytes to ready XYZ data. */
 	uint16_t bufsize;
@@ -123,7 +122,5 @@ HAL_StatusTypeDef lis3dh_write(lis3dh_t *lis3dh, uint16_t reg, uint8_t data);
 
 /* Read the XYZ data into lis3dh->buf. Requires a buffer size of 6 bytes. */
 HAL_StatusTypeDef lis3dh_get_xyz(lis3dh_t *lis3dh);
-
-HAL_StatusTypeDef lis3dh_get_temp(lis3dh_t *lis3dh);
 
 #endif /* INC_LIS3DH_H_ */

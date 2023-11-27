@@ -79,7 +79,7 @@ void Error_Handler(void);
 #define GPS_RX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define NUM_SAMPLES 512//400
+#define NUM_SAMPLES 480//400
 #define ACCEL_DATA_SCALER 16384
 #define MIN_GPS_DISTANCE 5
 #define METERS_TO_MILES 1609.34

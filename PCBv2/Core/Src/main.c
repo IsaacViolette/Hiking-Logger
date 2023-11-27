@@ -208,7 +208,6 @@ int main(void)
 
 				temp     = roundf(zz*scale_factor);
 				acc[i++] = (int8_t)temp;
-				// You now have raw acceleration of gravity in lis3dh->x, y, and z.
 			}
 		}
 		//pass data to step counting algorithm, 4 seconds at a time (which is the WINDOW_LENGTH). put the data into a temporary buffer each loop

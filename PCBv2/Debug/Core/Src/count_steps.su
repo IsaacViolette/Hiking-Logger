@@ -1,8 +1,8 @@
-../Core/Src/count_steps.c:44:17:SquareRoot	32	static
-../Core/Src/count_steps.c:71:13:get_autocorr_peak_stats	64	static
-../Core/Src/count_steps.c:100:16:get_precise_peakind	24	static
-../Core/Src/count_steps.c:126:13:derivative	48	static
-../Core/Src/count_steps.c:145:13:autocorr	56	static
-../Core/Src/count_steps.c:161:13:remove_mean	24	static
-../Core/Src/count_steps.c:177:13:lowpassfilt	24	static
-../Core/Src/count_steps.c:195:9:count_steps	56	static
+../Core/Src/count_steps.c:43:17:SquareRoot	32	static
+../Core/Src/count_steps.c:70:13:get_autocorr_peak_stats	64	static
+../Core/Src/count_steps.c:99:16:get_precise_peakind	24	static
+../Core/Src/count_steps.c:125:13:derivative	48	static
+../Core/Src/count_steps.c:144:13:autocorr	56	static
+../Core/Src/count_steps.c:160:13:remove_mean	24	static
+../Core/Src/count_steps.c:176:13:lowpassfilt	24	static
+../Core/Src/count_steps.c:194:9:count_steps	56	static

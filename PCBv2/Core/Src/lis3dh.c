@@ -22,6 +22,7 @@ HAL_StatusTypeDef lis3dh_init(lis3dh_t *lis3dh, I2C_HandleTypeDef *i2c, uint8_t 
 	/* Let device wake up. */
 	HAL_Delay(LID3DH_POWER_UP_MS);
 
+	/* Check if device is ready */
 	status = HAL_I2C_IsDeviceReady(lis3dh->i2c, lis3dh->i2c_addr, 1, TIMEOUT_MS);
 	if (status != HAL_OK) return status;
 
@@ -38,8 +39,6 @@ HAL_StatusTypeDef lis3dh_init(lis3dh_t *lis3dh, I2C_HandleTypeDef *i2c, uint8_t 
 	status = lis3dh_write(lis3dh, REG_CTRL_REG4, 0x88);
 	if (status != HAL_OK) return status;
 
-	// Enable temp sensor.
-	status = lis3dh_write(lis3dh, REG_TEMP_CFG_REG, 0x80);
 	return status;
 }
 
@@ -87,9 +86,4 @@ HAL_StatusTypeDef lis3dh_get_xyz(lis3dh_t* lis3dh) {
 	lis3dh->z = (int) (((int8_t) lis3dh->buf[5]) << 8) | lis3dh->buf[4];
 
 	return HAL_OK;
-}
-
-/* To-do */
-HAL_StatusTypeDef lis3dh_get_temp(lis3dh_t* lis3dh) {
-	return HAL_ERROR;
 }
