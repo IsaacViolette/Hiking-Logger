@@ -1,6 +1,5 @@
 #include "count_steps.h"
 #include "stdint.h"
-#include "stdio.h"  //using this for printing debug outputs
 
 //this algorithm is a simple adaptation of the following paper:
 //"RecoFit - Using a Wearable Sensor to Find, Recognize, and Count Repetitive Exercises"
@@ -231,7 +230,6 @@ uint8_t count_steps(int8_t *data) {
 
     //hone in on the exact peak index
     peak_ind = get_precise_peakind(autocorr_buff, peak_ind);
-    //printf("peak ind: %i\n", peak_ind);
 
     //get autocorrelation peak stats
     uint8_t neg_slope_count = 0;
@@ -251,6 +249,5 @@ uint8_t count_steps(int8_t *data) {
         num_steps = 0;
     }
 
-    //printf("num steps: %i\n", num_steps);
     return num_steps;
 }
