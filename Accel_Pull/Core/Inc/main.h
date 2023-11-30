@@ -86,7 +86,7 @@ void Error_Handler(void);
 
 #define TOP 0
 #define BELOW 1
-#define THRESH 12500
+#define THRESH 13315
 
 
 #define SD_SPI_HANDLE hspi1
