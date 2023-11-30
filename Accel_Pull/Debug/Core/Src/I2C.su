@@ -1,0 +1,7 @@
+../Core/Src/I2C.c:24:8:I2C_Start	32	static
+../Core/Src/I2C.c:66:6:I2C_Stop	16	static
+../Core/Src/I2C.c:76:6:I2C_WaitLineIdle	16	static
+../Core/Src/I2C.c:84:8:I2C_SendData	32	static
+../Core/Src/I2C.c:127:8:I2C_ReceiveData	32	static
+../Core/Src/I2C.c:152:6:I2C1_EV_IRQHandler	4	static
+../Core/Src/I2C.c:156:6:I2C1_ER_IRQHandler	4	static
