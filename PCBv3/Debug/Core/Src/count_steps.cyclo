@@ -1,8 +1,0 @@
-../Core/Src/count_steps.c:43:17:SquareRoot	4
-../Core/Src/count_steps.c:70:13:get_autocorr_peak_stats	5
-../Core/Src/count_steps.c:99:16:get_precise_peakind	11
-../Core/Src/count_steps.c:125:13:derivative	4
-../Core/Src/count_steps.c:144:13:autocorr	3
-../Core/Src/count_steps.c:160:13:remove_mean	3
-../Core/Src/count_steps.c:176:13:lowpassfilt	4
-../Core/Src/count_steps.c:194:9:count_steps	11

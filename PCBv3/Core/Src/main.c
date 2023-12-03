@@ -35,21 +35,6 @@
 
 /* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
@@ -61,7 +46,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 // Allocate a buffer for reading data from the sensor.
 // Six bytes required to read XYZ data.
-uint8_t xyz_buf[6] = { 0 };
+//uint8_t xyz_buf[6] = { 0 };
 // New instance of the lis3dh convenience object.
 lis3dh_t lis3dh;
 
@@ -83,9 +68,6 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t nmea;
-char nmea_buf[256];
-char nmea_gga[256];
-uint8_t i = 0;
 
 double cur_lat = 0;
 double cur_lon = 0;
@@ -97,6 +79,10 @@ double alt = 0;
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	char nmea_buf[256];
+	char nmea_gga[256];
+	uint8_t i = 0;
+
     if (huart == &huart1) {
 
         nmea_buf[i++] = nmea;
