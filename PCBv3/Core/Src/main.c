@@ -77,11 +77,12 @@ char cur_time[9];
 char pre_time[9];
 double alt = 0;
 
+char nmea_buf[256];
+char nmea_gga[256];
+uint8_t i = 0;
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	char nmea_buf[256];
-	char nmea_gga[256];
-	uint8_t i = 0;
 
     if (huart == &huart1) {
 
