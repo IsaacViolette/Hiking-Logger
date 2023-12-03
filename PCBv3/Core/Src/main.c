@@ -30,7 +30,6 @@
 #include "I2C.h"
 #include "ssd1306.h"
 #include "lis3dh.h"
-#include "count_steps.h"
 #include "math.h"   //using this for converting the CSV data from float to int
 #include <stdarg.h>
 
