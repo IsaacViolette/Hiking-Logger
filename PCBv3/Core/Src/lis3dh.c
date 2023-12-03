@@ -64,14 +64,14 @@ HAL_StatusTypeDef lis3dh_write(lis3dh_t* lis3dh, uint16_t reg, uint8_t data) {
 }
 
 HAL_StatusTypeDef lis3dh_get_xyz(lis3dh_t* lis3dh) {
-	if (lis3dh->bufsize < 6) return HAL_ERROR;
+	if (lis3dh->bufsize < 2) return HAL_ERROR;
 	HAL_StatusTypeDef status = HAL_I2C_Mem_Read(
 			lis3dh->i2c,
 			lis3dh->i2c_addr | I2C_READ_BIT,
-			REG_OUT_XYZ_BASE | 0x80,          // Progressively read 6 buffers.
+			REG_OUT_X_L | 0x80,          // Progressively read 6 buffers.
 			1,
 			lis3dh->buf,
-			6,
+			2,
 			TIMEOUT_MS);
 
 	if (status != HAL_OK) {

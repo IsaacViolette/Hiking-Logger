@@ -46,7 +46,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 // Allocate a buffer for reading data from the sensor.
 // Six bytes required to read XYZ data.
-//uint8_t xyz_buf[6] = { 0 };
+uint8_t x_accel_buf[2] = { 0 };
 // New instance of the lis3dh convenience object.
 lis3dh_t lis3dh;
 
@@ -146,7 +146,7 @@ int main(void)
 	uint8_t state = BELOW;
 	uint16_t steps = 0;
 
-	status = lis3dh_init(&lis3dh, &hi2c1, xyz_buf, 6);
+	status = lis3dh_init(&lis3dh, &hi2c1, x_accel_buf, 2);
 	if (status != HAL_OK)
 	{
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
@@ -162,6 +162,7 @@ int main(void)
 	float total_distance = 0;
 	float new_distance;
 	float miles;
+	int x_accel;
 	HAL_UART_Receive_IT(&huart1, &nmea, 1);
 
 	while (1)
@@ -172,17 +173,17 @@ int main(void)
 
 			if(lis3dh_xyz_available(&lis3dh)) {
 				status = lis3dh_get_xyz(&lis3dh);
-				float xx = lis3dh.x;
+				x_accel = lis3dh.x;
 
 				switch(state) {
 					case TOP:
-						if(xx < THRESH) {
+						if(x_accel < THRESH) {
 							steps += 1;
 							state = BELOW;
 						}
 						break;
 					case BELOW:
-						if(xx >= THRESH) {
+						if(x_accel >= THRESH) {
 							state = TOP;
 						}
 						break;
