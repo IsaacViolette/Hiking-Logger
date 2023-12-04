@@ -1,9 +1,3 @@
-/*
- * GPS.c
- *
- *  Created on: Oct 22, 2023
- *      Author: martinguarnieri + Isaac Violette
- */
 
 #include <stdio.h>
 #include <math.h>

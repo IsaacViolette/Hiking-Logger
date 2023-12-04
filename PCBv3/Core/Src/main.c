@@ -30,7 +30,6 @@
 #include "I2C.h"
 #include "ssd1306.h"
 #include "lis3dh.h"
-#include "math.h"   //using this for converting the CSV data from float to int
 #include <stdarg.h>
 
 /* USER CODE END Includes */
@@ -38,21 +37,10 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
-
 SPI_HandleTypeDef hspi1;
-
 UART_HandleTypeDef huart1;
 
-/* USER CODE BEGIN PV */
-// Allocate a buffer for reading data from the sensor.
-// Six bytes required to read XYZ data.
-uint8_t x_accel_buf[2] = { 0 };
-// New instance of the lis3dh convenience object.
-lis3dh_t lis3dh;
-
-// lis3dh calls return this HAL status type.
 HAL_StatusTypeDef status;
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -61,49 +49,64 @@ static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
+/* User Global Variables -----------------------------------------------------*/
+lis3dh_t lis3dh;
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-uint8_t nmea;
-
+/* Longitude and Latitude variables used for reading and writing */
 double cur_lat = 0;
 double cur_lon = 0;
 double pre_lat = 0;
 double pre_lon = 0;
+
+/* Time is 9 characters long, so 9 bytes */
 char cur_time[9];
 char pre_time[9];
+
+/* Reads altitude variable, not currently used */
 double alt = 0;
 
-char nmea_buf[256];
-char nmea_gga[256];
-uint8_t i = 0;
+/* GPS buffers */
+char nmea_buf[128]; //This is used for every NMEA sentence
+char nmea_gga[128]; //This stores only GGA sentences
+uint8_t nmea; //Holds integer character for every interrupt on UART1
+uint8_t i = 0; //Index for NMEA sentences
 
-
+/*
+ * This is the callback function that gets called by the HAL
+ * library when a UART receive operation is complete. Once interrupt
+ * occurs, this function is called. It stores ASCII (integer representation)
+ * into buffer. Once GGA sentence is found, latitude, longitude and time are
+ * stored to global variables. Start another interrupt reception
+ * once function is complete.
+ */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-
     if (huart == &huart1) {
 
-        nmea_buf[i++] = nmea;
+        nmea_buf[i++] = nmea; //store character
 
+        //check if sentence is complete or if buffer overflow occurs
         if (nmea == '\n' || i >= sizeof(nmea_buf) - 1) {
-        	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A')
+        	if(nmea_buf[3]=='G' && nmea_buf[4]=='G' && nmea_buf[5] == 'A') //check for GGA sentence
         	{
-        		memcpy(nmea_gga, nmea_buf, 256);
+        		memcpy(nmea_gga, nmea_buf, 128); //copy general buffer to GGA buffer
         		cur_lat = get_lat(nmea_gga);
         		cur_lon = get_lon(nmea_gga);
         		get_time(nmea_gga, pre_time);
         		alt = get_alt(nmea_gga);
         	}
 
-            memset(nmea_buf, 0, sizeof(nmea_buf));
-            i = 0;
+            memset(nmea_buf, 0, sizeof(nmea_buf)); //clear general buffer
+            i = 0; //reset index
         }
 
-        // Start the next reception
+        // Start next UART character reception
         HAL_UART_Receive_IT(&huart1, &nmea, 1);
+        if(status != HAL_OK)
+		{
+			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+			while(1);
+		}
     }
 }
 
@@ -113,13 +116,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   */
 int main(void)
 {
-	//some variables for FatFs
-	FATFS FatFs; 	//Fatfs handle
-	FIL fil; 		//File handle
-	UINT bytesWrote;
-	FRESULT fres;
-	BYTE writeBuf1[35];
-
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
 
@@ -134,25 +130,63 @@ int main(void)
 	MX_USART1_UART_Init();
 	MX_FATFS_Init();
 
+	// Allocate a buffer for reading data from the sensor.
+	// Two bytes required to read X accelerometer data.
+	uint8_t x_accel_buf[2] = { 0 };
+	uint16_t x_accel; //raw x acceleration
+
+	/* Buffer to write variables to display */
+	char display_buf[16];
+
+	/* Variables for state machine */
+	uint8_t state = BELOW; //arbitrary starting point
+	uint16_t steps = 0; //total steps
+
+	//some variables for FatFs
+	FATFS FatFs; 	//Fatfs handle
+	FIL fil; 		//File handle
+	UINT bytesWrote;
+	FRESULT fres;
+	BYTE writedisplay_buf[35];
+	char sd1[35]; //buffer for SD write, 35 characters always
+
+	float total_distance = 0;
+	float new_distance;
+	float miles;
+
+	HAL_Delay(1000); //Allow for microSD to settle (initialize everything)
+
 	/* Create new file on MicroSD */
-	HAL_Delay(1000);
-	f_mount(&FatFs, "", 1); //1=mount now
-	f_open(&fil, "crds.txt", FA_CREATE_ALWAYS | FA_OPEN_ALWAYS);
-	f_close(&fil);
-	f_mount(NULL, "", 0); //0=demount
+	fres = f_mount(&FatFs, "", 1); //1=mount now
+	if(fres != FR_OK) {
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		while(1);
+	}
+	fres = f_open(&fil, "crds.txt", FA_CREATE_ALWAYS | FA_OPEN_ALWAYS);
+	if(fres != FR_OK) {
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		while(1);
+	}
+	fres = f_close(&fil);
+	if(fres != FR_OK) {
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		while(1);
+	}
+	fres = f_mount(NULL, "", 0); //0=demount
+	if(fres != FR_OK) {
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		while(1);
+	}
 
-	char buf1[16];
-	char sd1[35];
-	char message[64];
-	uint8_t state = BELOW;
-	uint16_t steps = 0;
-
+	/* Initialize accelerometer */
 	status = lis3dh_init(&lis3dh, &hi2c1, x_accel_buf, 2);
 	if (status != HAL_OK)
 	{
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+		while(1);
 	}
 
+	/* Preliminary display of Steps and distance */
 	ssd1306_Init();
 	ssd1306_SetCursor(2,0);
 	ssd1306_WriteString("Steps:", Font_11x18, White);
@@ -160,48 +194,60 @@ int main(void)
 	ssd1306_WriteString("Distance:", Font_11x18, White);
 	ssd1306_UpdateScreen();
 
-	float total_distance = 0;
-	float new_distance;
-	float miles;
-	int x_accel;
-	HAL_UART_Receive_IT(&huart1, &nmea, 1);
+	/* Start character interrupt interrupt */
+	status = HAL_UART_Receive_IT(&huart1, &nmea, 1);
+	if(status != HAL_OK)
+	{
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+		while(1);
+	}
 
 	while (1)
 	{
+		/* Waits predetermined number of samples, then updates screen */
 		for(int i = 0; i < NUM_SAMPLES; i++)
 		{
-			HAL_Delay(50); //20Hz
+			HAL_Delay(50); //20Hz sampling rate
 
+			/* State machine  */
 			if(lis3dh_xyz_available(&lis3dh)) {
 				status = lis3dh_get_xyz(&lis3dh);
-				x_accel = lis3dh.x;
+				if(status != HAL_OK)
+				{
+					HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+					while(1);
+				}
+
+				x_accel = lis3dh.x; //get x acceleration
 
 				switch(state) {
-					case TOP:
-						if(x_accel < THRESH) {
-							steps += 1;
-							state = BELOW;
+					case TOP: //if in TOP state
+						if(x_accel < THRESH) { //if acceleration drops below threshold
+							steps += 1; //add one step
+							state = BELOW; //change state
 						}
 						break;
-					case BELOW:
-						if(x_accel >= THRESH) {
-							state = TOP;
+					case BELOW: //if in BOTTOM state
+						if(x_accel > THRESH) { //if acceleration surpasses threshold
+							state = TOP; //change states
 						}
 						break;
 				}
 			}
 		}
 
+		/* Write Steps to display */
 		ssd1306_SetCursor(70,0);
-		ssd1306_WriteString(itoa(steps,message,10), Font_11x18, White);
+		ssd1306_WriteString(itoa(steps,display_buf,10), Font_11x18, White);
 
+		/* Chacks for GPS lock, lat and long will be zero in this case*/
 		if((pre_lat == 0) && (pre_lon == 0)) {
 		  ssd1306_SetCursor(2,50);
 		  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
 		  ssd1306_UpdateScreen();
 		}
 		else {
-			sprintf(sd1,"%fN,%fW,%s",pre_lat,pre_lon,pre_time);
+			sprintf(sd1,"%fN,%fW,%s",pre_lat,pre_lon,pre_time); //write lat,long,time to sd card buffer
 
 			fres = f_mount(&FatFs, "", 1); //1=mount now
 			if(fres != FR_OK) {
@@ -211,9 +257,9 @@ int main(void)
 
 			fres = f_open(&fil, "crds.txt", FA_WRITE | FA_OPEN_ALWAYS);
 			if(fres == FR_OK) {
-				f_lseek(&fil, f_size(&fil));
-				strncpy((char*)writeBuf1, sd1, 35);
-				fres = f_write(&fil, writeBuf1, 35, &bytesWrote);
+				f_lseek(&fil, f_size(&fil)); //seek through file to find next line
+				strncpy((char*)writedisplay_buf, sd1, 35); //copy general string to required sd card buffer
+				fres = f_write(&fil, writedisplay_buf, 35, &bytesWrote);
 				if(fres != FR_OK) {
 					HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
 					while(1);
@@ -224,30 +270,31 @@ int main(void)
 				while(1);
 			}
 
-			f_close(&fil);
+			f_close(&fil); //close file
 
-			f_mount(NULL, "", 0);
+			f_mount(NULL, "", 0); //dismout file
 
 			new_distance = calculateDistance(pre_lat, pre_lon, cur_lat, cur_lon);
-			if (new_distance > MIN_GPS_DISTANCE){
+			if(new_distance > MIN_GPS_DISTANCE){ //prevent GPS drift when still
 			  total_distance += new_distance;
 			}
-			if (total_distance < 400)
+			if(total_distance < 400) //display meters
 			{
-			  sprintf(buf1,"%0.2f meters",total_distance);
+			  sprintf(display_buf,"%0.2f meters",total_distance);
 			}
-			else{
+			else{ //change from meters to miles
 			  miles = total_distance / METERS_TO_MILES;
-			  sprintf(buf1,"%0.2f miles",miles);
+			  sprintf(display_buf,"%0.2f miles",miles);
 			}
 			ssd1306_SetCursor(2,40);
-			ssd1306_WriteString(buf1, Font_11x18, White);
+			ssd1306_WriteString(display_buf, Font_11x18, White);
 			ssd1306_UpdateScreen();
 
 		}
-			  pre_lat = cur_lat;
-			  pre_lon = cur_lon;
-			  strcpy(pre_time, cur_time);
+			/* update present values to past */
+			pre_lat = cur_lat;
+			pre_lon = cur_lon;
+			strcpy(pre_time, cur_time);
 	}
 }
 
