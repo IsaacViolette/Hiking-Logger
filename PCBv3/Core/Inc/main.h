@@ -79,13 +79,14 @@ void Error_Handler(void);
 #define GPS_RX_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define NUM_SAMPLES 512
+#define NUM_SAMPLES 256
 #define MIN_GPS_DISTANCE 5
 #define METERS_TO_MILES 1609.34
 
 #define TOP 0
 #define BELOW 1
-#define THRESH 13315 //calibrated value
+#define THRESH_LOW 13315 //calibrated value
+#define THRESH_HIGH 14100
 
 #define SD_SPI_HANDLE hspi1
 /* USER CODE END Private defines */

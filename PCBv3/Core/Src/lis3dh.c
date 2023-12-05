@@ -76,14 +76,10 @@ HAL_StatusTypeDef lis3dh_get_xyz(lis3dh_t* lis3dh) {
 
 	if (status != HAL_OK) {
 		lis3dh->x = -1;
-		lis3dh->y = -1;
-		lis3dh->z = -1;
 		return status;
 	}
 
 	lis3dh->x = (int) (((int8_t) lis3dh->buf[1]) << 8) | lis3dh->buf[0];
-	lis3dh->y = (int) (((int8_t) lis3dh->buf[3]) << 8) | lis3dh->buf[2];
-	lis3dh->z = (int) (((int8_t) lis3dh->buf[5]) << 8) | lis3dh->buf[4];
 
 	return HAL_OK;
 }

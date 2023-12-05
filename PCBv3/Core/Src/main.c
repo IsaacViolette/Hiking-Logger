@@ -133,7 +133,7 @@ int main(void)
 	// Allocate a buffer for reading data from the sensor.
 	// Two bytes required to read X accelerometer data.
 	uint8_t x_accel_buf[2] = { 0 };
-	uint16_t x_accel; //raw x acceleration
+	signed int x_accel; //raw x acceleration
 
 	/* Buffer to write variables to display */
 	char display_buf[16];
@@ -222,13 +222,13 @@ int main(void)
 
 				switch(state) {
 					case TOP: //if in TOP state
-						if(x_accel < THRESH) { //if acceleration drops below threshold
+						if(x_accel < THRESH_LOW) { //if acceleration drops below threshold
 							steps += 1; //add one step
 							state = BELOW; //change state
 						}
 						break;
 					case BELOW: //if in BOTTOM state
-						if(x_accel > THRESH) { //if acceleration surpasses threshold
+						if(x_accel > THRESH_HIGH) { //if acceleration surpasses threshold
 							state = TOP; //change states
 						}
 						break;

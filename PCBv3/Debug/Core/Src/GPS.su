@@ -1,7 +1,7 @@
 ../Core/Src/GPS.c:11:8:get_lat	160	static
 ../Core/Src/GPS.c:46:8:get_lon	160	static
-../Core/Src/GPS.c:78:6:get_time	48	static
-../Core/Src/GPS.c:100:8:get_alt	160	static
-../Core/Src/GPS.c:125:8:ddm2dd	40	static
-../Core/Src/GPS.c:133:8:degreesToRadians	16	static
-../Core/Src/GPS.c:138:8:calculateDistance	104	static
+../Core/Src/GPS.c:81:6:get_time	48	static
+../Core/Src/GPS.c:117:8:get_alt	160	static
+../Core/Src/GPS.c:152:8:ddm2dd	40	static
+../Core/Src/GPS.c:168:8:degreesToRadians	16	static
+../Core/Src/GPS.c:175:8:calculateDistance	104	static
