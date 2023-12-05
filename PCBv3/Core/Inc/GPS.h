@@ -10,6 +10,7 @@
 
 #define RADIUS_OF_EARTH 6371000 // Earth's radius in meters
 
+// All functions for GPS data
 double get_lat(char *gga);
 double get_lon(char *gga);
 void get_time(char *gga, char *time);
