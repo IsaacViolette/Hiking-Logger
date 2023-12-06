@@ -280,11 +280,11 @@ int main(void)
 			}
 			if(total_distance < 400) //display meters
 			{
-			  sprintf(display_buf,"%0.2f meters",total_distance);
+			  sprintf(display_buf,"%0.2f m",total_distance);
 			}
 			else{ //change from meters to miles
 			  miles = total_distance / METERS_TO_MILES;
-			  sprintf(display_buf,"%0.2f miles",miles);
+			  sprintf(display_buf,"%0.2f Mi",miles);
 			}
 			ssd1306_SetCursor(2,40);
 			ssd1306_WriteString(display_buf, Font_11x18, White);
