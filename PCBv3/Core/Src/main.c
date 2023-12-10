@@ -241,7 +241,7 @@ int main(void)
 		ssd1306_WriteString(itoa(steps,display_buf,10), Font_11x18, White);
 
 		/* Chacks for GPS lock, lat and long will be zero in this case*/
-		if((pre_lat == 0) && (pre_lon == 0)) {
+		if((pre_lat == 0) || (pre_lon == 0) || (cur_lat == 0) || (cur_lon == 0)) {
 		  ssd1306_SetCursor(2,50);
 		  ssd1306_WriteString("Need GPS Lock", Font_7x10, White);
 		  ssd1306_UpdateScreen();
